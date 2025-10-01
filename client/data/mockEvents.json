@@ -1,0 +1,222 @@
+[
+    {
+        "id": 1,
+    "type": "Temperature",
+        "name": "Hot Day",
+        "probability": 85,
+        "severity": "high",
+        "location": { "lat": 31.9539, "lng": 35.9106 },
+        "date": "2025-09-28",
+        "description": "Expected temperature above 35°C.",
+        "suggestedItems": ["Sunscreen", "Hat", "Water bottle", "Sunglasses"]
+    },
+    {
+        "id": 2,
+    "type": "Precipitation",
+        "name": "Heavy Rain",
+        "probability": 70,
+        "severity": "medium",
+        "location": { "lat": 25.2048, "lng": 55.2708 },
+        "date": "2025-09-29",
+        "description": "Chance of heavy rain showers with possible flooding in low areas.",
+        "suggestedItems": ["Umbrella", "Raincoat", "Poncho", "Rain boots"]
+    },
+    {
+        "id": 3,
+    "type": "Wind",
+        "name": "Strong Winds",
+        "probability": 60,
+        "severity": "high",
+        "location": { "lat": 25.7617, "lng": -80.1918 },
+        "date": "2025-09-30",
+        "description": "Wind speed expected to reach 40 km/h, caution for outdoor activities.",
+        "suggestedItems": ["Windbreaker", "Cap", "Glasses"]
+    },
+    {
+        "id": 4,
+    "type": "Humidity",
+        "name": "High Humidity",
+        "probability": 75,
+        "severity": "medium",
+        "location": { "lat": 40.7128, "lng": -74.006 },
+        "date": "2025-10-01",
+        "description": "Humidity levels around 80%, discomfort likely during outdoor activities.",
+        "suggestedItems": ["Light clothing", "Hand fan", "Extra water"]
+    },
+    {
+        "id": 5,
+    "type": "Air Quality",
+        "name": "Dust Storm",
+        "probability": 50,
+        "severity": "high",
+        "location": { "lat": 23.8859, "lng": 45.0792 },
+        "date": "2025-10-02",
+        "description": "Elevated dust concentration detected, visibility reduced.",
+        "suggestedItems": ["Face mask", "Protective eyewear", "Scarf"]
+    },
+    {
+        "id": 6,
+    "type": "Temperature",
+    "name": "Cold Spell",
+        "probability": 40,
+        "severity": "medium",
+        "location": { "lat": 55.7558, "lng": 37.6173 },
+        "date": "2025-10-03",
+        "description": "Temperatures below 0°C expected for the day.",
+        "suggestedItems": ["Warm coat", "Gloves", "Scarf", "Winter hat"]
+    },
+    {
+        "id": 7,
+    "type": "Comfort",
+        "name": "Comfortable Day",
+        "probability": 90,
+        "severity": "low",
+        "location": { "lat": 48.8566, "lng": 2.3522 },
+        "date": "2025-10-04",
+        "description": "Comfort index is high; pleasant weather for outdoor activities.",
+        "suggestedItems": ["Running shoes"]
+    },
+    {
+        "id": 8,
+    "type": "Temperature",
+        "name": "Heat Wave Warning",
+        "probability": 65,
+        "severity": "high",
+        "location": { "lat": 34.0522, "lng": -118.2437 },
+        "date": "2025-10-05",
+        "description": "Possible heat wave: 3+ consecutive days above 38°C.",
+        "suggestedItems": ["Sunscreen", "Water bottle", "Hat", "Sunglasses"]
+    },
+    {
+        "id": 9,
+    "type": "Precipitation",
+        "name": "Light Showers",
+        "probability": 30,
+        "severity": "low",
+        "location": { "lat": 51.5074, "lng": -0.1278 },
+        "date": "2025-10-06",
+        "description": "Chance of light rain showers, short-lived.",
+        "suggestedItems": ["Umbrella", "Light rain jacket"]
+    },
+    {
+        "id": 10,
+    "type": "Cloud",
+        "name": "Overcast Skies",
+        "probability": 55,
+        "severity": "low",
+        "location": { "lat": 35.6895, "lng": 139.6917 },
+        "date": "2025-10-07",
+        "description": "Thick cloud cover expected, limited sunlight.",
+        "suggestedItems": ["Light jacket", "Camera for photography"]
+    },
+    {
+        "id": 11,
+    "type": "Precipitation",
+        "name": "Monsoon Rains",
+        "probability": 78,
+        "severity": "high",
+        "location": { "lat": 19.076, "lng": 72.8777 },
+        "date": "2025-10-08",
+        "description": "Sustained heavy showers with intermittent downpours.",
+        "suggestedItems": ["Umbrella", "Raincoat", "Poncho", "Rain boots"]
+    },
+    {
+        "id": 12,
+    "type": "Wind",
+        "name": "Gusty Coastal Winds",
+        "probability": 62,
+        "severity": "medium",
+        "location": { "lat": -41.2866, "lng": 174.7756 },
+        "date": "2025-10-09",
+        "description": "Blustery conditions along the coast; caution for light objects.",
+        "suggestedItems": ["Windbreaker", "Cap", "Glasses"]
+    },
+    {
+        "id": 13,
+    "type": "Temperature",
+        "name": "Cold Morning",
+        "probability": 58,
+        "severity": "medium",
+        "location": { "lat": 59.9139, "lng": 10.7522 },
+        "date": "2025-10-10",
+        "description": "Frost possible early; warms slightly by afternoon.",
+        "suggestedItems": ["Warm coat", "Gloves", "Winter hat", "Scarf"]
+    },
+    {
+        "id": 14,
+    "type": "Temperature",
+        "name": "Record Heat Advisory",
+        "probability": 69,
+        "severity": "high",
+        "location": { "lat": 33.4484, "lng": -112.074 },
+        "date": "2025-10-11",
+        "description": "Excessive heat warning; minimize outdoor exposure.",
+        "suggestedItems": ["Sunscreen", "Water bottle", "Sunglasses", "Hat"]
+    },
+    {
+        "id": 15,
+    "type": "Humidity",
+        "name": "Tropical Humidity Spike",
+        "probability": 73,
+        "severity": "medium",
+        "location": { "lat": 1.3521, "lng": 103.8198 },
+        "date": "2025-10-12",
+        "description": "Sticky conditions; heat index higher than air temp.",
+        "suggestedItems": ["Hand fan", "Extra water", "Light clothing"]
+    },
+    {
+        "id": 16,
+    "type": "Air Quality",
+        "name": "Haze Alert",
+        "probability": 52,
+        "severity": "medium",
+        "location": { "lat": 13.7563, "lng": 100.5018 },
+        "date": "2025-10-13",
+        "description": "Reduced visibility and AQ concerns due to regional haze.",
+        "suggestedItems": ["Face mask", "Protective eyewear", "Water bottle"]
+    },
+    {
+        "id": 17,
+    "type": "Cloud",
+        "name": "Dramatic Clouds Day",
+        "probability": 57,
+        "severity": "low",
+        "location": { "lat": 64.1466, "lng": -21.9426 },
+        "date": "2025-10-14",
+        "description": "Moody skies; good light for landscapes.",
+        "suggestedItems": ["Camera for photography", "Light jacket"]
+    },
+    {
+        "id": 18,
+    "type": "Temperature",
+        "name": "Arctic Front",
+        "probability": 64,
+        "severity": "high",
+        "location": { "lat": 49.8951, "lng": -97.1384 },
+        "date": "2025-10-15",
+        "description": "Biting wind chills and sub-zero wind overnight.",
+        "suggestedItems": ["Warm coat", "Thermal clothing", "Gloves", "Scarf", "Winter hat (beanie)"]
+    },
+    {
+        "id": 19,
+    "type": "Comfort",
+        "name": "Park Day",
+        "probability": 92,
+        "severity": "low",
+        "location": { "lat": 41.3874, "lng": 2.1686 },
+        "date": "2025-10-16",
+        "description": "Mild temps and light breeze; great for walking.",
+        "suggestedItems": ["Running shoes", "Sunglasses"]
+    },
+    {
+        "id": 20,
+    "type": "Precipitation",
+        "name": "Light Drizzle",
+        "probability": 46,
+        "severity": "low",
+        "location": { "lat": 47.6062, "lng": -122.3321 },
+        "date": "2025-10-17",
+        "description": "On-and-off drizzle through the day.",
+        "suggestedItems": ["Umbrella", "Light jacket", "Rain boots"]
+    }
+]

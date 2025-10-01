@@ -18,21 +18,18 @@
 
 /*! ===== Severity Badge Styles ===== */
 .badge-low {
-    background: var(--bg-black-25);
-    color: var(--text-black-900);
-    border: 1px solid var(--bg-black-50);
+    background: var(--success);
+    color: #fff;
 }
 
 .badge-medium {
-    background: var(--bg-black-25);
-    color: var(--text-black-700);
-    border: 1px solid var(--bg-black-50);
+    background: var(--warning);
+    color: #fff;
 }
 
 .badge-high {
-    background: var(--bg-black-25);
-    color: var(--text-black-600);
-    border: 1px solid var(--bg-black-50);
+    background: var(--error);
+    color: #fff;
 }
 
 /*! ===== Space Background Canvas ===== */

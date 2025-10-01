@@ -1,29 +1,33 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { AppEvent } from "@/pages/Dashboard";
 
 interface EventMapProps {
     events: AppEvent[];
+    center?: [number, number];
+    zoom?: number;
+    onEventSelect?: (event: AppEvent) => void;
+    onMapClick?: () => void;
 }
 
-// Severity colors
 const SEVERITY_COLORS: Record<string, string> = {
     high: "red",
     medium: "orange",
     low: "green",
 };
 
-// Auto-fit map to all markers
-const FitBounds = ({ events }: { events: AppEvent[] }) => {
+const MapFocus = ({ events, center, zoom }: { events: AppEvent[]; center?: [number, number]; zoom?: number }) => {
     const map = useMap();
+    if (center && zoom) {
+        map.setView(center, zoom);
+        return null;
+    }
     if (events.length === 0) return null;
-
     const bounds = events.map((e) => [e.location.lat, e.location.lng] as [number, number]);
     map.fitBounds(bounds, { padding: [50, 50] });
     return null;
 };
 
-// Function to create a DivIcon with colored badge
 const getDivIcon = (severity: string) =>
     L.divIcon({
         html: `<div style="
@@ -34,19 +38,28 @@ const getDivIcon = (severity: string) =>
         border: 2px solid white;
         box-shadow: 0 0 3px rgba(0,0,0,0.5);
     "></div>`,
-        className: "", // Remove default leaflet styles
+        className: "",
         iconSize: [24, 24],
         iconAnchor: [12, 12],
     });
 
-const EventMap = ({ events }: EventMapProps) => {
+const MapClickClear = ({ onMapClick }: { onMapClick?: () => void }) => {
+    useMapEvents({
+        click: () => {
+            onMapClick?.();
+        },
+    });
+    return null;
+};
+
+const EventMap = ({ events, center, zoom, onEventSelect, onMapClick }: EventMapProps) => {
     const defaultCenter: [number, number] = [20, 0];
     const defaultZoom = 2;
 
     return (
         <MapContainer
-            center={defaultCenter}
-            zoom={defaultZoom}
+            center={center ?? defaultCenter}
+            zoom={zoom ?? defaultZoom}
             scrollWheelZoom={true}
             style={{ height: "100%", width: "100%" }}
         >
@@ -55,13 +68,27 @@ const EventMap = ({ events }: EventMapProps) => {
                 attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             />
 
-            <FitBounds events={events} />
+            <MapFocus events={events} center={center} zoom={zoom} />
+            <MapClickClear onMapClick={onMapClick} />
 
             {events.map((event) => (
                 <Marker
                     key={event.id}
                     position={[event.location.lat, event.location.lng]}
                     icon={getDivIcon(event.severity)}
+                    eventHandlers={
+                        onEventSelect
+                            ? {
+                                click: (e: any) => {
+                                    if (e && e.originalEvent) {
+                                        if (typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
+                                        if (typeof e.originalEvent.stopImmediatePropagation === "function") e.originalEvent.stopImmediatePropagation();
+                                    }
+                                    onEventSelect(event);
+                                },
+                            }
+                            : undefined
+                    }
                 >
                     <Popup>
                         <strong>{event.name}</strong>

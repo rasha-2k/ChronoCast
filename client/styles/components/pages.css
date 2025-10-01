@@ -90,7 +90,6 @@
 .dashboard-event-button:hover {
     background: var(--accent);
     border-color: hsl(var(--primary) / 0.3);
-    transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
 
@@ -142,7 +141,7 @@
 .dashboard-modal-overlay {
     position: fixed;
     inset: 0;
-    z-index: 50;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -266,6 +265,122 @@
     background: var(--muted);
     padding: 1rem;
     transition: all 0.2s ease;
+}
+
+.cc-dashboard-upcoming {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+}
+
+.cc-dashboard-upcoming .max-h-64 {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* DatePicker */
+.rmdp-container .cc-datepicker.rmdp-wrapper,
+.rmdp-container .cc-datepicker.ep-arrow::after {
+    background: var(--background);
+    border: 1px solid var(--ring);
+    box-shadow: var(--shadow-lg);
+
+}
+
+.rmdp-container .cc-datepicker .rmdp-year-picker,
+.rmdp-container .cc-datepicker .rmdp-month-picker {
+    background: var(--muted);
+    border-radius: 0.75rem;
+    color: var(--foreground);
+}
+
+
+.rmdp-container .cc-datepicker .rmdp-calendar {
+    background: transparent;
+}
+
+.rmdp-container .cc-datepicker .rmdp-header-values {
+    color: var(--foreground);
+}
+
+.rmdp-container .cc-datepicker .rmdp-week-day {
+    color: var(--muted-foreground);
+}
+
+.rmdp-container .cc-datepicker .rmdp-day {
+    color: var(--foreground);
+}
+
+.rmdp-container .cc-datepicker .rmdp-day.rmdp-selected span {
+    background-color: var(--primary);
+    color: #fff;
+    box-shadow: none;
+}
+
+.rmdp-container .cc-datepicker .rmdp-day.rmdp-today span {
+    background-color: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary-foreground);
+}
+
+.rmdp-container .cc-datepicker .rmdp-range {
+    background-color: var(--primary);
+    color: #fff;
+    box-shadow: none;
+}
+
+.rmdp-container .ep-arrow.cc-datepicker-arrow::after {
+    background: var(--muted);
+}
+
+.rmdp-container .ep-arrow.cc-datepicker-arrow[direction="bottom"] {
+    border-top: 1px solid var(--border);
+}
+
+.rmdp-container .ep-arrow.cc-datepicker-arrow[direction="top"] {
+    border-bottom: 1px solid var(--border);
+}
+
+/* Suggested Items Section Styles */
+.cc-dashboard-suggested-items {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: var(--muted);
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.suggested-item-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--background);
+    transition: all 0.2s ease;
+    min-height: 80px;
+    cursor: pointer;
+}
+
+.suggested-item-card:hover {
+    background: var(--accent);
+    border: 1px solid var(--brand-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.suggested-item-card.placeholder {
+    opacity: 0.6;
+    border-style: dashed;
+    cursor: default;
+}
+
+.suggested-item-card.placeholder:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--background);
 }
 
 /*! ===== Landing Page Styles ===== */
