@@ -9,7 +9,7 @@ import { EventTypeIcon, EventType } from "@/components/icons/EventTypeIcon";
 import EventMap from "@/components/common/EventMap";
 import { Calendar, MapPin, RefreshCcw, Thermometer, Flag, Umbrella, Shield, Glasses, Package } from "lucide-react";
 import { Boot, FanBold, Jacket as JacketIcon, WaterBottle, Gloves as GlovesIcon, Scarf, Raincoat as RaincoatIcon, RunningShoes, WinterHat, BilledCap as Cap, Poncho, ShieldSunOutline, SunglassesFill as Sunglasses, SleevelessJacket, Camera, TShirtBold, CoatLine, MonclerJacket, TwotoneMasks as Mask } from "@/components/icons/custom";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export interface AppEvent {
   id: number;
@@ -30,14 +30,14 @@ interface ProbabilityData {
 
 // Use imported mockEventsData as the events source
 
-const mockProbabilityData: ProbabilityData[] = [
-  { date: "09-20", probability: 45 },
-  { date: "09-21", probability: 52 },
-  { date: "09-22", probability: 48 },
-  { date: "09-23", probability: 75 },
-  { date: "09-24", probability: 68 },
-  { date: "09-25", probability: 85 },
-  { date: "09-26", probability: 72 },
+const upcomingEvents = [
+  { date: "09-20", events: 3 },
+  { date: "09-21", events: 6 },
+  { date: "09-22", events: 2 },
+  { date: "09-23", events: 7 },
+  { date: "09-24", events: 4 },
+  { date: "09-25", events: 5 },
+  { date: "09-26", events: 8 },
 ];
 
 const mockNASAImage = {
@@ -340,34 +340,24 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <div className="cc-dashboard-probability">
-                <h3 className="mb-3 text-sm font-semibold">Probability Forecast</h3>
+              <div className="cc-dashboard-timeline">
+                <h3 className="mb-3 text-sm font-semibold">Upcoming Events Timeline</h3>
                 {loading ? (
                   <LoadingSkeleton className="h-64 w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={mockProbabilityData}>
-                      <CartesianGrid className="cc-chart-grid" />
-                      <XAxis
-                        dataKey="date"
-                        className="cc-chart-axis"
-                      />
-                      <YAxis
-                        className="cc-chart-axis"
-                      />
-                      <Tooltip
-                        wrapperClassName="cc-chart-tooltip"
-                        contentStyle={{}}
-                        labelStyle={{}}
-                        itemStyle={{}}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="probability"
-                        className="cc-chart-line-primary"
-                        dot={{ className: "cc-chart-dot-primary" }}
-                      />
-                    </LineChart>
+                    <BarChart data={upcomingEvents}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip wrapperClassName="cc-chart-tooltip" cursor={{ fill: "var(--accent)", opacity: 0.15 }} />
+                        <Bar
+                          dataKey="events"
+                          fill="var(--brand-primary)"
+                          radius={[8, 8, 0, 0]}
+                          className="cc-bar-theme"
+                        />
+                    </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>

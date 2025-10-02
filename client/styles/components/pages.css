@@ -71,113 +71,7 @@
     gap: 1.5rem;
 }
 
-/* Dashboard Event Buttons */
-.dashboard-event-button {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border);
-    background: var(--background);
-    padding: 0.75rem;
-    text-align: left;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.dashboard-event-button:hover {
-    background: var(--accent);
-    border-color: hsl(var(--primary) / 0.3);
-    box-shadow: var(--shadow-md);
-}
-
-.dashboard-refresh-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--background);
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    color: var(--foreground);
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.dashboard-refresh-button:hover {
-    background: var(--accent);
-    color: var(--accent-foreground);
-}
-
-/* Dashboard Form Controls */
-.dashboard-select,
-.dashboard-input {
-    margin-top: 0.25rem;
-    width: 100%;
-    border-radius: var(--radius);
-    border: 1px solid var(--text-black-600);
-    background: var(--background);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    color: var(--foreground);
-    transition: all 0.2s ease;
-}
-
-.dashboard-select:focus,
-.dashboard-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--ring);
-}
-
-.dashboard-select option {
-    background: var(--background);
-    color: var(--foreground);
-}
-
-/* Dashboard Modal */
-.dashboard-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 1rem;
-}
-
-.dashboard-modal-content {
-    max-height: 80vh;
-    width: 100%;
-    max-width: 32rem;
-    overflow-y: auto;
-    border-radius: 0.75rem;
-    border: 1px solid var(--glass-border);
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-lg);
-}
-
-.dashboard-modal-close {
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--muted);
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    color: var(--foreground);
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.dashboard-modal-close:hover {
-    background: var(--accent);
-    color: var(--accent-foreground);
-}
-
+/* Dashboard KPI Cards */
 .cc-dashboard-kpis {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -243,6 +137,7 @@
     width: 1.5rem;
 }
 
+/* Dashboard Main */
 .cc-dashboard-main {
     display: grid;
     gap: 1.5rem;
@@ -255,28 +150,48 @@
     }
 }
 
-.cc-dashboard-controls,
-.cc-dashboard-nasa,
-.cc-dashboard-map,
-.cc-dashboard-probability,
-.cc-dashboard-upcoming {
-    border-radius: 1rem;
+/* Dashboard Controls */
+.dashboard-refresh-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: var(--radius);
     border: 1px solid var(--border);
-    background: var(--muted);
-    padding: 1rem;
+    background: var(--background);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--foreground);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.dashboard-refresh-button:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.dashboard-select,
+.dashboard-input {
+    margin-top: 0.25rem;
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--text-black-600);
+    background: var(--background);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
     transition: all 0.2s ease;
 }
 
-.cc-dashboard-upcoming {
-    display: flex;
-    flex-direction: column;
-    max-height: 400px;
+.dashboard-select:focus,
+.dashboard-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring);
 }
 
-.cc-dashboard-upcoming .max-h-64 {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
+.dashboard-select option {
+    background: var(--background);
+    color: var(--foreground);
 }
 
 /* DatePicker */
@@ -342,7 +257,7 @@
     border-bottom: 1px solid var(--border);
 }
 
-/* Suggested Items Section Styles */
+/* Dashboard Suggested Items */
 .cc-dashboard-suggested-items {
     border-radius: 1rem;
     border: 1px solid var(--border);
@@ -383,7 +298,107 @@
     background: var(--background);
 }
 
+/* Dashboard Upcoming Events Chart */
+.cc-bar-theme {
+    transition: fill 0.2s;
+    fill: var(--brand-primary) !important;
+    cursor: pointer;
+}
+
+.cc-bar-theme:hover {
+    fill: var(--brand-secondary) !important;
+}
+
+/* Dashboard Upcoming Events */
+.cc-dashboard-upcoming {
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+}
+
+.cc-dashboard-upcoming .max-h-64 {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.dashboard-event-button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--background);
+    padding: 0.75rem;
+    text-align: left;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.dashboard-event-button:hover {
+    background: var(--accent);
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: var(--shadow-md);
+}
+
+/* Dashboard Modal */
+.dashboard-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+}
+
+.dashboard-modal-content {
+    max-height: 80vh;
+    width: 100%;
+    max-width: 32rem;
+    overflow-y: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.dashboard-modal-close {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--muted);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.dashboard-modal-close:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.cc-dashboard-controls,
+.cc-dashboard-nasa,
+.cc-dashboard-map,
+.cc-dashboard-timeline,
+.cc-dashboard-upcoming {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: var(--muted);
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
 /*! ===== Landing Page Styles ===== */
+
+/* landing hero */
 .cc-landing-hero {
     position: relative;
     overflow: hidden;
@@ -564,6 +579,7 @@
     color: white;
 }
 
+/* landing stats */
 .cc-landing-stats {
     margin-top: 2.5rem;
     display: grid;
