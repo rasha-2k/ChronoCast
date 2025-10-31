@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { AppLayout } from "@/components/layout/Layout";
+import { AppLayout } from "@/components/layout";
 import { Telescope, Sparkles } from "lucide-react";
 
 export default function Landing() {

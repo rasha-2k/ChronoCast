@@ -1,44 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/backgrounds/bg-dark.css"
-import mockEventsData from "../data/mockEvents.json";
 import { AppLayout } from "@/components/layout/Layout";
-import { LoadingSkeleton } from "@/components/common/LoadingSkeleton";
-import { SeverityBadge, SeverityLevel } from "@/components/common/SeverityBadge";
-import { EventTypeIcon, EventType } from "@/components/icons/EventTypeIcon";
-import EventMap from "@/components/common/EventMap";
-import { Calendar, MapPin, RefreshCcw, Thermometer, Flag, Umbrella, Shield, Glasses, Package } from "lucide-react";
-import { Boot, FanBold, Jacket as JacketIcon, WaterBottle, Gloves as GlovesIcon, Scarf, Raincoat as RaincoatIcon, RunningShoes, WinterHat, BilledCap as Cap, Poncho, ShieldSunOutline, SunglassesFill as Sunglasses, SleevelessJacket, Camera, TShirtBold, CoatLine, MonclerJacket, TwotoneMasks as Mask } from "@/components/icons/custom";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LoadingSkeleton, LocationMap } from "@/components/common";
+import { ForecastTypeSelector, VariablesSelector, WeatherSummary } from "@/components/ui";
+import { ForecastType, WeatherVariable } from "@/types/weather";
+import { WeatherForecastResponse } from "@shared/api";
+import { Calendar, MapPin, RefreshCcw, Thermometer, Flag, Umbrella, Shield, Glasses, Package, Search, Locate, TrendingUp, Target, AlertTriangle, CloudSun } from "lucide-react";
+import WeatherService from "@/services/weather-service";
+import { Boot, FanBold, Jacket as JacketIcon, WaterBottle, Gloves as GlovesIcon, Scarf, Raincoat as RaincoatIcon, RunningShoes, WinterHat, BilledCap as Cap, Poncho, ShieldSunOutline, SunglassesFill as Sunglasses, SleevelessJacket, Camera, TShirtBold, CoatLine, MonclerJacket, TwotoneMasks as Mask } from "@/components/icons";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-export interface AppEvent {
-  id: number;
-  type: EventType;
-  name: string;
-  probability: number;
-  severity: SeverityLevel;
-  location: { lat: number; lng: number };
-  date: string;
-  description: string;
-  suggestedItems?: string[];
-}
-
-interface ProbabilityData {
-  date: string;
-  probability: number;
-}
-
-// Use imported mockEventsData as the events source
-
-const upcomingEvents = [
-  { date: "09-20", events: 3 },
-  { date: "09-21", events: 6 },
-  { date: "09-22", events: 2 },
-  { date: "09-23", events: 7 },
-  { date: "09-24", events: 4 },
-  { date: "09-25", events: 5 },
-  { date: "09-26", events: 8 },
-];
 
 const mockNASAImage = {
   title: "Aurora Over Earth from ISS",
@@ -78,7 +50,6 @@ const getItemIcon = (item: string) => {
   if (itemLower.includes('sunscreen') || itemLower.includes('sunblock') || itemLower.includes('spf')) return ShieldSunOutline;
   if (itemLower.includes('camera')) return Camera;
 
-  // Default icon for unmatched items
   return Package;
 };
 
@@ -90,34 +61,239 @@ const placeholderItems = [
 ];
 
 export default function Dashboard() {
-  const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
   const [values, setValues] = useState<(DateObject | string | Date | null)[]>([
-    new DateObject().subtract(4, "days"),
-    new DateObject().add(4, "days"),
+    new DateObject(), 
+    new DateObject().add(7, "days"),
   ]);
-  const [selectedLocation, setSelectedLocation] = useState<string>("Global");
-  const [eventFilter, setEventFilter] = useState<string>("all");
+  const [forecastType, setForecastType] = useState<ForecastType>('daily');
   const [loading, setLoading] = useState<boolean>(true);
-  const [mapSelectedEvent, setMapSelectedEvent] = useState<AppEvent | null>(null);
+  const [selectedCoordinates, setSelectedCoordinates] = useState<{ lat: number, lng: number } | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<{ name: string, latitude: number, longitude: number }[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [locationSource, setLocationSource] = useState<'search' | 'current' | 'map' | null>(null);
+  const [dateValidationError, setDateValidationError] = useState<string | null>(null);
+  const [isMapClickEnabled, setIsMapClickEnabled] = useState<boolean>(false);
+  
+  const [weeklyWeatherData, setWeeklyWeatherData] = useState<WeatherForecastResponse | null>(null);
+  const [weeklyWeatherLoading, setWeeklyWeatherLoading] = useState<boolean>(false);
+  
+  const validateDateRange = useCallback((dateValues: (DateObject | string | Date | null)[]): string | null => {
+    if (!dateValues || dateValues.length === 0) {
+      return 'Please select at least one date';
+    }
 
-  const typeToCategory = useMemo(() => ({
-    "Temperature": "Temperature",
-    "Wind": "Wind",
-    "Precipitation": "Precipitation",
-    "Humidity": "Humidity",
-    "Cloud": "Cloud",
-    "Air Quality": "Air Quality",
-    "Comfort": "Comfort",
-  } as Record<string, string>), []);
+    const today = new Date();
+    const maxFuture = new Date();
+    maxFuture.setDate(today.getDate() + 16); // 16 days in future
+    const minPast = new Date();
+    minPast.setMonth(today.getMonth() - 3); // 3 months in past
 
-  const availableCategories = useMemo(() => {
-    const cats = new Set<string>();
-    (mockEventsData as AppEvent[]).forEach((e) => {
-      const cat = typeToCategory[e.type] ?? e.type;
-      cats.add(cat);
+    const toYYYYMMDD = (v: DateObject | string | Date) =>
+      v instanceof DateObject
+        ? v.format("YYYY-MM-DD")
+        : new DateObject(v).format("YYYY-MM-DD");
+
+    const validDates = dateValues.filter(Boolean) as (DateObject | string | Date)[];
+
+    if (validDates.length === 1) {
+      const date = new Date(toYYYYMMDD(validDates[0]));
+
+      if (date < minPast) {
+        return 'Date cannot be more than 3 months in the past';
+      }
+
+      if (date > maxFuture) {
+        return 'Date cannot be more than 16 days in the future';
+      }
+    } else if (validDates.length === 2) {
+      const startDate = new Date(toYYYYMMDD(validDates[0]));
+      const endDate = new Date(toYYYYMMDD(validDates[1]));
+
+      if (startDate > endDate) {
+        return 'Start date must be before end date';
+      }
+
+      if (startDate < minPast) {
+        return 'Start date cannot be more than 3 months in the past';
+      }
+
+      if (endDate > maxFuture) {
+        return 'End date cannot be more than 16 days in the future';
+      }
+    }
+
+    return null;
+  }, []);
+  
+  const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
+  const [variablesInitialized, setVariablesInitialized] = useState<boolean>(false);
+  const [temperatureUnit, setTemperatureUnit] = useState<'celsius' | 'fahrenheit'>('celsius');
+  const [weatherData, setWeatherData] = useState<WeatherForecastResponse | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const weatherService = useMemo(() => new WeatherService(), []);
+  const weatherRequestCache = useMemo(() => new Map<string, any>(), []);
+  
+  const getCoordinates = useCallback(() => {
+    return selectedCoordinates;
+  }, [selectedCoordinates]);
+  
+  const formatDate = useCallback((date: DateObject | string | Date | null): string => {
+    if (!date) return '';
+    if (date instanceof DateObject) {
+      return date.format('YYYY-MM-DD');
+    }
+    return new DateObject(date).format('YYYY-MM-DD');
+  }, []);
+  
+  const formatDateISO = useCallback((date: Date): string => {
+    return date.toISOString().split('T')[0];
+  }, []);
+  
+  const getWeeklyDateRange = useCallback(() => {
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(today.getDate() + 6);
+    return { today, endDate };
+  }, []);
+  
+  const getSelectedDateRange = useCallback(() => {
+    const validDates = (values || []).filter(Boolean) as (DateObject | string | Date)[];
+    const startDate = validDates.length > 0 ? formatDate(validDates[0]) : formatDate(new Date());
+    const endDate = validDates.length > 1 ? formatDate(validDates[1]) : startDate;
+    return { startDate, endDate };
+  }, [values, formatDate]);
+  
+  const createCacheKey = useCallback((coords: { lat: number; lng: number }, unit: string, extraData?: any) => {
+    return JSON.stringify({
+      lat: coords.lat,
+      lng: coords.lng,
+      forecastType,
+      temperatureUnit: unit,
+      values: values.map(v => v instanceof DateObject ? v.format('YYYY-MM-DD') : new DateObject(v).format('YYYY-MM-DD')),
+      ...extraData
     });
-    return Array.from(cats).sort((a, b) => a.localeCompare(b));
-  }, [typeToCategory]);
+  }, [forecastType, values]);
+  
+  const variablesGroups: Record<ForecastType, WeatherVariable[]> = {
+    daily: [
+      { id: 'temperature_2m_max', name: 'Max Temperature', group: 'daily' },
+      { id: 'temperature_2m_min', name: 'Min Temperature', group: 'daily' },
+      { id: 'precipitation_sum', name: 'Precipitation Sum', group: 'daily' },
+      { id: 'weather_code', name: 'Weather Code', group: 'daily' },
+      { id: 'sunrise', name: 'Sunrise', group: 'daily' },
+      { id: 'sunset', name: 'Sunset', group: 'daily' },
+      { id: 'wind_gusts_10m_max', name: 'Max Wind Gusts', group: 'daily' },
+      { id: 'uv_index_max', name: 'UV Index Max', group: 'daily' },
+      { id: 'precipitation_probability_max', name: 'Max Precipitation Probability', group: 'daily' }
+    ],
+    hourly: [
+      { id: 'temperature_2m', name: 'Temperature', group: 'hourly' },
+      { id: 'relative_humidity_2m', name: 'Relative Humidity', group: 'hourly' },
+      { id: 'precipitation', name: 'Precipitation', group: 'hourly' },
+      { id: 'weather_code', name: 'Weather Code', group: 'hourly' },
+      { id: 'wind_speed_10m', name: 'Wind Speed', group: 'hourly' },
+      { id: 'wind_direction_10m', name: 'Wind Direction', group: 'hourly' },
+      { id: 'cloud_cover', name: 'Cloud Cover', group: 'hourly' },
+      { id: 'visibility', name: 'Visibility', group: 'hourly' },
+      { id: 'uv_index', name: 'UV Index', group: 'hourly' }
+    ],
+    current: [
+      { id: 'temperature_2m', name: 'Temperature', group: 'current' },
+      { id: 'relative_humidity_2m', name: 'Relative Humidity', group: 'current' },
+      { id: 'weather_code', name: 'Weather Code', group: 'current' },
+      { id: 'wind_speed_10m', name: 'Wind Speed', group: 'current' },
+      { id: 'wind_direction_10m', name: 'Wind Direction', group: 'current' },
+      { id: 'cloud_cover', name: 'Cloud Cover', group: 'current' },
+      { id: 'visibility', name: 'Visibility', group: 'current' }
+    ]
+  };
+  
+  const fetchWeatherData = useCallback(async () => {
+    if (!selectedCoordinates) {
+      setWeatherError('Please select a location first');
+      return;
+    }
+    
+    setLoading(true);
+    setWeatherError(null);
+    
+    try {
+      const coordinates = getCoordinates();
+      
+      if (!coordinates) {
+        throw new Error('No location coordinates available');
+      }
+      
+      const dateError = validateDateRange(values);
+      if (dateError) {
+        throw new Error(dateError);
+      }
+      
+      const allVars = variablesGroups[forecastType].map(v => v.id);
+      
+      const currentCacheKey = createCacheKey(coordinates, temperatureUnit);
+      
+      if (weatherRequestCache.has(currentCacheKey)) {
+        setWeatherData(weatherRequestCache.get(currentCacheKey));
+        setLoading(false);
+        return;
+      }
+      
+      const { startDate, endDate } = getSelectedDateRange();
+      
+      const createParams = (unit: 'celsius' | 'fahrenheit') => {
+        const params: {
+          latitude: number;
+          longitude: number;
+          daily?: string[];
+          hourly?: string[];
+          current?: string[];
+          temperature_unit: string;
+          start_date: string;
+          end_date: string;
+        } = {
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          temperature_unit: unit,
+          start_date: startDate,
+          end_date: endDate
+        };
+          
+        if (forecastType === 'daily') {
+          params.daily = allVars;
+        } else if (forecastType === 'hourly') {
+          params.hourly = allVars;
+        } else if (forecastType === 'current') {
+          params.current = allVars;
+        }
+        
+        return params;
+      };
+      
+      // Fetch both temperature units in parallel
+      const [celsiusData, fahrenheitData] = await Promise.all([
+        weatherService.getForecast(createParams('celsius')),
+        weatherService.getForecast(createParams('fahrenheit'))
+      ]);
+      
+      const celsiusCacheKey = createCacheKey(coordinates, 'celsius');
+      const fahrenheitCacheKey = createCacheKey(coordinates, 'fahrenheit');
+      
+      weatherRequestCache.set(celsiusCacheKey, celsiusData);
+      weatherRequestCache.set(fahrenheitCacheKey, fahrenheitData);
+      
+      const currentData = temperatureUnit === 'celsius' ? celsiusData : fahrenheitData;
+      setWeatherData(currentData);
+      
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      setWeatherError(error instanceof Error ? error.message : 'Failed to fetch weather data');
+      setWeatherData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCoordinates, forecastType, temperatureUnit, values, validateDateRange, weatherRequestCache, weatherService, variablesGroups, getCoordinates, formatDate, createCacheKey, getSelectedDateRange]);
 
   const showLoading = () => {
     setLoading(true);
@@ -127,42 +303,272 @@ export default function Dashboard() {
   useEffect(() => {
     showLoading();
   }, []);
-
-  const filtered = (mockEventsData as AppEvent[])
-    .filter((e) => eventFilter === "all" || e.type === (eventFilter as EventType))
-    .filter((e) => {
-      if (eventFilter !== "all") {
-        const cat = typeToCategory[e.type] ?? e.type;
-        if (cat !== eventFilter) return false;
-      }
-      const toYYYYMMDD = (v: DateObject | string | Date) =>
-        v instanceof DateObject
-          ? v.format("YYYY-MM-DD")
-          : new DateObject(v).format("YYYY-MM-DD");
-
-      const picked = (values || []).filter(Boolean) as (DateObject | string | Date)[];
-      if (picked.length === 0) return false;
-      if (picked.length === 1) {
-        const day = toYYYYMMDD(picked[0]);
-        return e.date === day;
-      }
-
-      const a = toYYYYMMDD(picked[0]);
-      const b = toYYYYMMDD(picked[1]);
-      const start = a <= b ? a : b;
-      const end = a <= b ? b : a;
-      return e.date >= start && e.date <= end;
-    });
+  
+  useEffect(() => {
+    if (selectedCoordinates) {
+      fetchWeatherData();
+    }
+  }, [selectedCoordinates, forecastType, values, fetchWeatherData]);
+  useEffect(() => {
+    if (!selectedCoordinates) return;
+    
+    const coordinates = getCoordinates();
+    if (!coordinates) return;
+    
+    const cacheKey = createCacheKey(coordinates, temperatureUnit);
+    
+    if (weatherRequestCache.has(cacheKey)) {
+      setWeatherData(weatherRequestCache.get(cacheKey));
+    }
+  }, [temperatureUnit, selectedCoordinates, forecastType, values, weatherRequestCache, getCoordinates, createCacheKey]);
 
   useEffect(() => {
-    setSelectedEvent(null);
-    setMapSelectedEvent(null);
+    if (selectedCoordinates && !variablesInitialized) {
+      const defaultVariables = variablesGroups[forecastType]
+        .filter(v => 
+          v.id.includes('temperature') || 
+          v.id.includes('precipitation') || 
+          v.id === 'weather_code'
+        )
+        .map(v => v.id);
+      
+      const varsToSelect = defaultVariables.length > 0 
+        ? defaultVariables 
+        : variablesGroups[forecastType].slice(0, 3).map(v => v.id);
+      
+      setSelectedVariables(varsToSelect);
+      setVariablesInitialized(true);
+    }
+  }, [selectedCoordinates, forecastType, variablesGroups, variablesInitialized]);
+
+  // Geocoding API for city search with autocomplete
+  const searchLocations = async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+
+    try {
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch location data');
+      }
+
+      const data = await response.json();
+
+      if (data.results) {
+        const results = data.results.map((item: any) => ({
+          name: `${item.name}${item.admin1 ? `, ${item.admin1}` : ''}${item.country ? `, ${item.country}` : ''}`,
+          latitude: item.latitude,
+          longitude: item.longitude
+        }));
+
+        setSearchResults(results);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error searching for locations:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounce search to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm.length >= 2) {
+        searchLocations(searchTerm);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (event.target instanceof Element &&
+        !event.target.closest(".search-input-wrapper")) {
+        setSearchResults([]);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    setSelectedCoordinates(null);
+    setLocationSource(null);
+    setSearchTerm("");
   }, [values]);
 
-  const refresh = showLoading;
+  useEffect(() => {
+    const validationError = validateDateRange(values);
+    setDateValidationError(validationError);
+  }, [values, validateDateRange]);
 
-  const displayedItems = mapSelectedEvent?.suggestedItems || placeholderItems;
-  const isPlaceholder = !mapSelectedEvent;
+
+  const refresh = () => {
+    showLoading();
+    if (selectedCoordinates) {
+      setSelectedCoordinates({ ...selectedCoordinates });
+      weatherRequestCache.clear();
+      fetchWeatherData();
+    }
+  };
+
+  const clearLocation = () => {
+    setSelectedCoordinates(null);
+    setLocationSource(null);
+    setSearchTerm("");
+    setSearchResults([]);
+    setWeatherData(null);
+    setWeatherError(null);
+    setWeeklyWeatherData(null);
+    setVariablesInitialized(false); 
+    setIsMapClickEnabled(false); 
+  };
+
+  const displayedItems = placeholderItems;
+  const isPlaceholder = true;
+
+  const fetchWeeklyTemperatureData = useCallback(async () => {
+    if (!selectedCoordinates) {
+      setWeeklyWeatherData(null);
+      return;
+    }
+
+    setWeeklyWeatherLoading(true);
+
+    try {
+      const coordinates = getCoordinates();
+      
+      if (!coordinates) {
+        setWeeklyWeatherData(null);
+        setWeeklyWeatherLoading(false);
+        return;
+      }
+
+      // Always fetch 7 days starting from today
+      const { today, endDate } = getWeeklyDateRange();
+
+      const weeklyCacheKey = createCacheKey(coordinates, temperatureUnit, {
+        type: 'weekly',
+        startDate: formatDateISO(today),
+        endDate: formatDateISO(endDate)
+      });
+      
+      if (weatherRequestCache.has(weeklyCacheKey)) {
+        setWeeklyWeatherData(weatherRequestCache.get(weeklyCacheKey));
+        setWeeklyWeatherLoading(false);
+        return;
+      }
+
+      const createParams = (unit: 'celsius' | 'fahrenheit') => ({
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+        temperature_unit: unit,
+        start_date: formatDateISO(today),
+        end_date: formatDateISO(endDate),
+        daily: ['temperature_2m_max', 'temperature_2m_min']
+      });
+
+      // Fetch both temperature units in parallel
+      const [celsiusData, fahrenheitData] = await Promise.all([
+        weatherService.getForecast(createParams('celsius')),
+        weatherService.getForecast(createParams('fahrenheit'))
+      ]);
+      
+      const celsiusWeeklyCacheKey = createCacheKey(coordinates, 'celsius', {
+        type: 'weekly',
+        startDate: formatDateISO(today),
+        endDate: formatDateISO(endDate)
+      });
+      const fahrenheitWeeklyCacheKey = createCacheKey(coordinates, 'fahrenheit', {
+        type: 'weekly',
+        startDate: formatDateISO(today),
+        endDate: formatDateISO(endDate)
+      });
+      
+      weatherRequestCache.set(celsiusWeeklyCacheKey, celsiusData);
+      weatherRequestCache.set(fahrenheitWeeklyCacheKey, fahrenheitData);
+      
+      const currentData = temperatureUnit === 'celsius' ? celsiusData : fahrenheitData;
+      setWeeklyWeatherData(currentData);
+    } catch (error) {
+      console.error('Error fetching weekly temperature data:', error);
+      setWeeklyWeatherData(null);
+    } finally {
+      setWeeklyWeatherLoading(false);
+    }
+  }, [selectedCoordinates, temperatureUnit, weatherService, weatherRequestCache, getCoordinates, createCacheKey, getWeeklyDateRange, formatDateISO]);
+
+  // Build weekly average temperature data (today + next 6 days) from weeklyWeatherData
+  const weeklyTempsData = useMemo(() => {
+    try {
+      const daily = (weeklyWeatherData as any)?.daily;
+      if (!daily) return [] as Array<{ date: string; avgTemp: number }>;
+
+      const dates: string[] = daily.time || daily.date || daily.dates || [];
+      const tmax: number[] = daily.temperature_2m_max || [];
+      const tmin: number[] = daily.temperature_2m_min || [];
+      if (!dates.length || !tmax.length || !tmin.length) return [];
+
+      // Build list with exactly 7 days
+      const result = dates.slice(0, 7).map((d, i) => {
+        const max = typeof tmax[i] === 'number' ? tmax[i] : null;
+        const min = typeof tmin[i] === 'number' ? tmin[i] : null;
+        if (max == null || min == null) return null;
+        const avg = (max + min) / 2;
+        const dateObj = new Date(d);
+        const label = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        return {
+          date: label,
+          avgTemp: Number(avg.toFixed(1)),
+        };
+      }).filter(Boolean) as Array<{ date: string; avgTemp: number }>;
+
+      return result;
+    } catch {
+      return [] as Array<{ date: string; avgTemp: number }>;
+    }
+  }, [weeklyWeatherData]);
+
+  // Fetch weekly temperature data independently for the chart
+  useEffect(() => {
+    if (selectedCoordinates) {
+      fetchWeeklyTemperatureData();
+    }
+  }, [selectedCoordinates, fetchWeeklyTemperatureData]);
+
+  // Handle temperature unit changes for weekly data - check cache first
+  useEffect(() => {
+    if (!selectedCoordinates) return;
+    
+    const coordinates = getCoordinates();
+    if (!coordinates) return;
+    
+    const { today, endDate } = getWeeklyDateRange();
+    
+    const weeklyCacheKey = createCacheKey(coordinates, temperatureUnit, {
+      type: 'weekly',
+      startDate: formatDateISO(today),
+      endDate: formatDateISO(endDate)
+    });
+    
+    if (weatherRequestCache.has(weeklyCacheKey)) {
+      setWeeklyWeatherData(weatherRequestCache.get(weeklyCacheKey));
+    }
+  }, [temperatureUnit, selectedCoordinates, weatherRequestCache, getCoordinates, createCacheKey, getWeeklyDateRange, formatDateISO]);
 
   return (
     <AppLayout>
@@ -171,7 +577,6 @@ export default function Dashboard() {
         <div className="cc-dashboard-kpis">
           {[
             { t: "Risk Index", v: "75%", icon: Thermometer, c: "text-emerald-300" },
-            { t: "Events", v: String(mockEventsData.length), icon: Flag, c: "text-blue-300" },
             { t: "Space Weather", v: "M-Class", icon: Thermometer, c: "text-fuchsia-300" },
             { t: "Updated", v: "2 min ago", icon: RefreshCcw, c: "text-amber-300" },
           ].map((k) => (
@@ -202,31 +607,14 @@ export default function Dashboard() {
                 </button>
               </div>
               <div className="space-y-4">
-                <label className="block text-xs">
-                  <span className="mb-1 inline-flex items-center gap-2">
-                    <MapPin className="h-4 w-4" /> Location
-                  </span>
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="dashboard-select"
-                  >
-                    {[
-                      "Global",
-                      "Africa",
-                      "Antarctica",
-                      "Asia",
-                      "Europe",
-                      "North America",
-                      "Oceania",
-                      "South America"
-                    ].map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <ForecastTypeSelector
+                  forecastType={forecastType}
+                  onChange={(type) => {
+                    setForecastType(type);
+                    setSelectedVariables([]);
+                    setVariablesInitialized(false); // Reset initialization flag
+                  }}
+                />
                 <label className="block text-xs">
                   <span className="mb-1 inline-flex items-center gap-2">
                     <Calendar className="h-4 w-4" /> Date
@@ -237,27 +625,21 @@ export default function Dashboard() {
                     dateSeparator=" to "
                     rangeHover
                     range
-                    format="YYYY-MM-DD"
+                    format="DD-MM-YYYY"
                     inputClass="dashboard-input"
                     containerStyle={{ width: "100%" }}
                     className="cc-datepicker"
                     arrowClassName="cc-datepicker-arrow"
                     calendarPosition="bottom-center"
                     placeholder="Select date or range"
+                    maxDate={new DateObject().add(16, "days")}
+                    minDate={new DateObject().subtract(3, "months")}
                   />
-                </label>
-                <label className="block text-xs">
-                  <span className="mb-1">Event Type</span>
-                  <select
-                    value={eventFilter}
-                    onChange={(e) => setEventFilter(e.target.value)}
-                    className="dashboard-select"
-                  >
-                    <option value="all">All Events</option>
-                    {availableCategories.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
+                  {dateValidationError && (
+                    <div className="mt-2">
+                      <p className="text-red-500 text-xs">{dateValidationError}</p>
+                    </div>
+                  )}
                 </label>
               </div>
             </div>
@@ -265,7 +647,7 @@ export default function Dashboard() {
             {/* Suggested Items Section */}
             <div className="cc-dashboard-suggested-items">
               <h3 className="mb-3 text-sm font-semibold">
-                {mapSelectedEvent ? `Suggested items to have for ${mapSelectedEvent.name}` : "Suggested items to have"}
+                Suggested items to have
               </h3>
               {loading ? (
                 <div className="grid grid-cols-2 gap-3">
@@ -289,11 +671,9 @@ export default function Dashboard() {
                   })}
                 </div>
               )}
-              {!mapSelectedEvent && (
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Click on an event on the map to see specific suggestions
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Select a location to see weather-based suggestions
+              </p>
             </div>
 
             <div className="cc-dashboard-nasa">
@@ -313,90 +693,239 @@ export default function Dashboard() {
           {/* Map + Viz */}
           <div className="space-y-6 lg:col-span-3">
             <div className="cc-dashboard-map">
-              <h3 className="mb-3 text-sm font-semibold">Event Map</h3>
+              <div className="mb-3 flex flex-col space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Location</h3>
+                  {selectedCoordinates ? (
+                    <button
+                      onClick={clearLocation}
+                      className="dashboard-refresh-button"
+                      title="Clear the current weather location"
+                    >
+                      <MapPin className="h-3.5 w-3.5 mr-1" />
+                      Clear Location
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsMapClickEnabled(!isMapClickEnabled)}
+                      className={`dashboard-refresh-button ${isMapClickEnabled ? 'bg-primary/20 border-primary' : ''}`}
+                      title={isMapClickEnabled ? "Cancel map selection" : "Click to choose a location on the map"}
+                    >
+                      <MapPin className="h-3.5 w-3.5 mr-1" />
+                      {isMapClickEnabled ? 'Cancel Selection' : 'Choose on Map'}
+                    </button>
+                  )}
+                </div>
+
+                <div className="location-selector-controls flex items-center space-x-2">
+                  <div className={`search-input-wrapper flex-1 relative ${searchResults.length > 0 ? 'results-visible' : ''}`}>
+                    <Search className="search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search for a city..."
+                      className="location-search-input"
+                      value={searchTerm || ""}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        if (e.target.value.length >= 2 && (locationSource === 'current' || locationSource === 'map')) {
+                          setSelectedCoordinates(null);
+                          setLocationSource(null);
+                        }
+                        // Disable map click mode when user starts typing
+                        if (e.target.value.length > 0 && isMapClickEnabled) {
+                          setIsMapClickEnabled(false);
+                        }
+                      }}
+                      onFocus={() => searchTerm && searchTerm.length >= 2 && searchLocations(searchTerm)}
+                    />
+                    {isSearching && <div className="search-loader"></div>}
+
+                    {searchResults.length > 0 && (
+                      <ul className="autocomplete-dropdown">
+                        {searchResults.map((location, index) => (
+                          <li
+                            key={index}
+                            className="autocomplete-item"
+                            onClick={() => {
+                              setSelectedCoordinates({
+                                lat: location.latitude,
+                                lng: location.longitude
+                              });
+                              setLocationSource('search');
+                              setSearchTerm(location.name);
+                              setSearchResults([]);
+                              setIsMapClickEnabled(false);
+                            }}
+                          >
+                            <MapPin className="autocomplete-item-icon" />
+                            <span>{location.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        setIsSearching(true);
+
+                        navigator.geolocation.getCurrentPosition(
+                          (position) => {
+                            const { latitude, longitude } = position.coords;
+
+                            setSelectedCoordinates({ lat: latitude, lng: longitude });
+                            setLocationSource('current');
+                            setSearchResults([]);
+                            setIsMapClickEnabled(false);
+                            setIsSearching(false);
+                          },
+                          (error) => {
+                            console.error('Error getting location:', error);
+                            alert('Unable to get your location. Please check your browser permissions.');
+                            setIsSearching(false);
+                          },
+                          {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                          }
+                        );
+                      } else {
+                        alert('Geolocation is not supported by your browser');
+                      }
+                    }}
+                    className="location-action-button current-location-button"
+                  >
+                    <Locate className={`location-action-icon ${isSearching ? 'animate-pulse' : ''}`} />
+                    Use my location
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative">
+                {loading ? (
+                  <LoadingSkeleton className="h-80 w-full" />
+                ) : (
+                  <>
+                    <div className={`h-80 w-full rounded-lg overflow-hidden ${isMapClickEnabled ? 'cursor-crosshair' : ''}`}>
+                      <LocationMap
+                        center={undefined}
+                        zoom={undefined}
+                        onMapClick={(lat, lng) => {
+                          if (isMapClickEnabled) {
+                            setSelectedCoordinates({ lat, lng });
+                            setLocationSource('map');
+                            setSearchTerm("");
+                            setIsMapClickEnabled(false); 
+                          }
+                        }}
+                        weatherLocation={selectedCoordinates}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-xs text-muted-foreground">
+                        {isMapClickEnabled 
+                          ? <span className="flex items-center gap-1"><Target className="h-3 w-3" /> Click anywhere on the map to set a location</span>
+                          : selectedCoordinates 
+                            ? 'Location selected' 
+                            : 'Click "Choose on Map" button to select a location'}
+                      </div>
+                      {selectedCoordinates && (
+                        <div className="flex items-center text-xs text-primary">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          <span>
+                            Location at: {`${selectedCoordinates.lat.toFixed(4)}°, ${selectedCoordinates.lng.toFixed(4)}°`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+              </div>
+
+            </div>
+            <div className="cc-dashboard-weather">
+              <div className="weather-dashboard-controls">
+                  <div className="weather-controls-container">
+                    <VariablesSelector
+                      variables={variablesGroups[forecastType]}
+                      selectedVariables={selectedVariables}
+                      onSelectVariables={(variables) => {
+                        setSelectedVariables(variables);
+                      }}
+                    />
+                  </div>
+              </div>
+
               {loading ? (
-                <LoadingSkeleton className="h-80 w-full" />
-              ) : (
-                <div className="h-80 w-full rounded-lg overflow-hidden">
-                  <EventMap
-                    events={filtered}
-                    onEventSelect={(event) => setMapSelectedEvent(event)}
-                    onMapClick={() => setMapSelectedEvent(null)}
-                    center={(() => {
-                      if (selectedLocation === "Global") return undefined;
-                      if (selectedLocation === "Africa") return [1.5, 17.5];
-                      if (selectedLocation === "Antarctica") return [-82.8628, 135.0000];
-                      if (selectedLocation === "Asia") return [34.0479, 100.6197];
-                      if (selectedLocation === "Europe") return [54.5260, 15.2551];
-                      if (selectedLocation === "North America") return [54.5260, -105.2551];
-                      if (selectedLocation === "Oceania") return [-22.7359, 140.0188];
-                      if (selectedLocation === "South America") return [-8.7832, -55.4915];
-                      return undefined;
-                    })()}
-                    zoom={selectedLocation === "Global" ? undefined : 3}
+                <div className="weather-dashboard-loading">
+                  <div className="loading-spinner"></div>
+                  <p>Loading weather data...</p>
+                </div>
+              ) : weatherError ? (
+                <div className="weather-dashboard-error">
+                  <div className="error-icon"><AlertTriangle className="h-12 w-12" /></div>
+                  <p>{weatherError}</p>
+                  <button
+                    onClick={() => {
+                      setWeatherError(null);
+                      fetchWeatherData();
+                    }}
+                    className="retry-button"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : weatherData ? (
+                <div className="weather-dashboard-content">
+                  <WeatherSummary
+                    data={weatherData}
+                    forecastType={forecastType}
+                    temperatureUnit={temperatureUnit}
+                    selectedVariables={selectedVariables}
+                    onToggleUnit={(unit) => {
+                      setTemperatureUnit(unit);
+                    }}
                   />
+                </div>
+              ) : (
+                <div className="weather-dashboard-empty">
+                  <div className="empty-icon"><CloudSun className="h-12 w-12" /></div>
+                  <p>{!selectedCoordinates ? "Select a location to view weather forecast" : "Select forecast options above"}</p>
                 </div>
               )}
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid gap-6">
               <div className="cc-dashboard-timeline">
-                <h3 className="mb-3 text-sm font-semibold">Upcoming Events Timeline</h3>
-                {loading ? (
-                  <LoadingSkeleton className="h-64 w-full" />
-                ) : (
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={upcomingEvents}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis allowDecimals={false} />
-                      <Tooltip wrapperClassName="cc-chart-tooltip" cursor={{ fill: "var(--accent)", opacity: 0.15 }} />
-                        <Bar
-                          dataKey="events"
-                          fill="var(--brand-primary)"
-                          radius={[8, 8, 0, 0]}
-                          className="cc-bar-theme"
-                        />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-
-              <div className="cc-dashboard-upcoming">
-                <h3 className="mb-3 text-sm font-semibold">Upcoming Events</h3>
-                {loading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <LoadingSkeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1">
-                          <LoadingSkeleton className="mb-2 h-4 w-3/4" />
-                          <LoadingSkeleton className="h-3 w-1/2" />
-                        </div>
-                      </div>
-                    ))}
+                <h3 className="mb-3 text-sm font-semibold">Weekly Temperature Trend</h3>
+                {weeklyWeatherLoading ? (
+                  <div className="weather-dashboard-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Loading temperature data...</p>
                   </div>
+                ) : weeklyTempsData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={256}>
+                    <LineChart data={weeklyTempsData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--muted-foreground)" strokeOpacity={0.3} />
+                      <XAxis dataKey="date" padding={{ left: 40, right: 40 }} />
+                      <YAxis domain={["auto", "auto"]} />
+                      <Tooltip
+                        formatter={(value: any) => `${value}°${temperatureUnit === 'celsius' ? 'C' : 'F'}`}
+                        cursor={{ stroke: "var(--accent)", strokeOpacity: 0.4 }}
+                      />
+                      <Line type="monotone" dataKey="avgTemp" stroke="var(--brand-primary)" strokeWidth={2} dot={{ r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 ) : (
-                  <div className="max-h-64 space-y-3 pr-1 overflow-y-auto">
-                    {filtered.map((e) => (
-                      <button
-                        key={e.id}
-                        onClick={() => setSelectedEvent(e)}
-                        className="dashboard-event-button"
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          <EventTypeIcon name={e.name} type={e.type as any} className="h-5 w-5" />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">{e.name}</p>
-                            <p className="text-xs text-muted-foreground">{e.date}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-shrink-0 items-center gap-2">
-                          <span className="text-xs font-bold">{e.probability}%</span>
-                          <SeverityBadge severity={e.severity} />
-                        </div>
-                      </button>
-                    ))}
+                  <div className="weather-dashboard-empty">
+                    <div className="empty-icon"><TrendingUp className="h-12 w-12" /></div>
+                    <p>{!selectedCoordinates
+                      ? 'Select a location to view weekly temperatures'
+                      : 'Weekly temperature data is not available'}</p>
                   </div>
                 )}
               </div>
@@ -405,52 +934,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {selectedEvent && (
-        <div className="dashboard-modal-overlay">
-          <div className="dashboard-modal-content">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <EventTypeIcon name={selectedEvent.name} type={selectedEvent.type as any} className="h-6 w-6" />
-                <h2 className="truncate text-lg font-bold">{selectedEvent.name}</h2>
-              </div>
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="dashboard-modal-close"
-              >
-                Close
-              </button>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span>Probability</span>
-                <span className="font-semibold">{selectedEvent.probability}%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Severity</span>
-                <SeverityBadge severity={selectedEvent.severity} />
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Date</span>
-                <span className="font-semibold">{selectedEvent.date}</span>
-              </div>
-              <div>
-                <span className="mb-1 block font-medium">Description</span>
-                <p className="text-muted-foreground leading-relaxed">{selectedEvent.description}</p>
-              </div>
-              {selectedEvent.suggestedItems && selectedEvent.suggestedItems.length > 0 && (
-                <div>
-                  <span className="mb-1 block font-medium">Suggested Items to have</span>
-                  <ul className="list-disc ml-5 text-muted-foreground">
-                    {selectedEvent.suggestedItems.map((item: string, idx: number) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </AppLayout>
   );
 }
+
+

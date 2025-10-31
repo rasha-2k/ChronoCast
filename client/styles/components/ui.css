@@ -1,4 +1,5 @@
 /*! ===== Accordion ===== */
+
 .accordion-item {
     border-bottom: 1px solid var(--border);
 }
@@ -34,7 +35,9 @@
     padding-bottom: 1rem;
 }
 
+
 /*! ===== Alert ===== */
+
 .alert {
     position: relative;
     width: 100%;
@@ -63,7 +66,9 @@
     line-height: 1.5;
 }
 
+
 /*! ===== Alert Dialog ===== */
+
 .alert-dialog-overlay {
     position: fixed;
     inset: 0;
@@ -118,7 +123,9 @@
     color: var(--muted-foreground);
 }
 
+
 /*! ===== Avatar ===== */
+
 .avatar {
     position: relative;
     display: flex;
@@ -146,7 +153,9 @@
     background: var(--muted);
 }
 
+
 /*! ===== Badge ===== */
+
 .badge {
     display: inline-flex;
     align-items: center;
@@ -182,7 +191,9 @@
     border: 1px solid var(--border);
 }
 
+
 /*! ===== Breadcrumb ===== */
+
 .breadcrumb-list {
     display: flex;
     flex-wrap: wrap;
@@ -220,7 +231,9 @@
     justify-content: center;
 }
 
+
 /*! ===== Button ===== */
+
 .button {
     display: inline-flex;
     align-items: center;
@@ -322,7 +335,9 @@
     width: 2.5rem;
 }
 
+
 /*! ===== Card ===== */
+
 .card {
     border-radius: 0.75rem;
     border: 1px solid var(--border);
@@ -362,7 +377,9 @@
     padding-top: 0;
 }
 
+
 /*! ===== Calendar ===== */
+
 .cc-calendar {
     padding: 0.75rem;
 }
@@ -511,7 +528,9 @@
     width: 1rem;
 }
 
+
 /*! ===== Carousel ===== */
+
 .cc-carousel {
     position: relative;
     width: 100%;
@@ -521,7 +540,9 @@
     align-items: center;
 }
 
+
 /*! ===== Chart ===== */
+
 .cc-chart {
     display: flex;
     aspect-ratio: 16 / 9;
@@ -568,7 +589,9 @@
     filter: drop-shadow(0 0 6px var(--brand-primary));
 }
 
+
 /*! ===== Checkbox ===== */
+
 .cc-checkbox {
     height: 1rem;
     width: 1rem;
@@ -607,7 +630,9 @@
     width: 1rem;
 }
 
+
 /*! ===== Collapsible ===== */
+
 .cc-collapsible {
     width: 100%;
 }
@@ -631,7 +656,9 @@
     transition: max-height 0.2s;
 }
 
+
 /*! ===== Command ===== */
+
 .cc-command {
     display: flex;
     height: 100%;
@@ -673,7 +700,9 @@
     color: var(--muted-foreground);
 }
 
+
 /*! ===== Context Menu ===== */
+
 .cc-context-menu-sub-trigger {
     display: flex;
     cursor: pointer;
@@ -712,7 +741,9 @@
     box-shadow: var(--shadow-md);
 }
 
+
 /*! ===== Dialog ===== */
+
 .cc-dialog-overlay {
     position: fixed;
     inset: 0;
@@ -742,7 +773,9 @@
     width: 1rem;
 }
 
+
 /*! ===== Drawer ===== */
+
 .cc-drawer-overlay {
     position: fixed;
     inset: 0;
@@ -771,7 +804,9 @@
     background: var(--muted);
 }
 
+
 /*! ===== Dropdown Menu ===== */
+
 .cc-dropdown-menu-sub-trigger {
     display: flex;
     cursor: pointer;
@@ -810,13 +845,17 @@
     box-shadow: var(--shadow-lg);
 }
 
+
 /*! ===== Form ===== */
+
 .cc-form-field-controller {
     width: 100%;
     display: block;
 }
 
+
 /*! ===== Hover Card ===== */
+
 .cc-hover-card-content {
     z-index: 50;
     width: 16rem;
@@ -829,7 +868,9 @@
     outline: none;
 }
 
+
 /*! ===== Input ===== */
+
 .cc-input {
     display: flex;
     height: 2.5rem;
@@ -857,7 +898,9 @@
     color: var(--muted-foreground);
 }
 
+
 /*! ===== Input OTP ===== */
+
 .cc-input-otp-container {
     display: flex;
     align-items: center;
@@ -929,7 +972,9 @@
     }
 }
 
+
 /*! ===== Label ===== */
+
 .cc-label {
     font-size: 0.875rem;
     font-weight: 500;
@@ -943,7 +988,9 @@
     opacity: 0.7;
 }
 
+
 /*! ===== Menubar ===== */
+
 .cc-menubar {
     display: flex;
     height: 2.5rem;
@@ -992,7 +1039,9 @@
     padding-left: 2rem;
 }
 
+
 /*! ===== Navigation Menu ===== */
+
 .cc-navigation-menu {
     position: relative;
     z-index: 10;
@@ -1043,7 +1092,9 @@
     transition: transform 0.2s;
 }
 
+
 /*! ===== Pagination ===== */
+
 .cc-pagination {
     margin: 0 auto;
     display: flex;
@@ -1058,7 +1109,9 @@
     gap: 0.25rem;
 }
 
+
 /*! ===== Popover ===== */
+
 .cc-popover-content {
     z-index: 50;
     width: 18rem;
@@ -1071,7 +1124,9 @@
     outline: none;
 }
 
+
 /*! ===== Resizable ===== */
+
 .cc-resizable-panel-group {
     display: flex;
     height: 100%;
@@ -1104,7 +1159,9 @@
     width: 0.625rem;
 }
 
+
 /*! ===== Scroll Area ===== */
+
 .cc-scroll-area {
     position: relative;
     overflow: hidden;
@@ -1144,7 +1201,9 @@
     background: var(--border);
 }
 
+
 /*! ===== Select ===== */
+
 .cc-select-trigger {
     display: flex;
     height: 2.5rem;
@@ -1185,7 +1244,52 @@
     padding: 0.25rem 0;
 }
 
+
+/*! ===== Tooltip ===== */
+
+.cc-tooltip-content {
+    padding: 8px 12px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    font-size: 0.875rem;
+    max-width: 220px;
+    color: var(--foreground);
+    z-index: 1005;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.forecast-tooltip {
+    padding: 8px 12px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    font-size: 0.875rem;
+    max-width: 220px;
+    color: var(--foreground);
+    z-index: 1000;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
 /*! ===== Table ===== */
+
 .cc-table-wrapper {
     position: relative;
     width: 100%;
@@ -1238,4 +1342,558 @@
     height: 3rem;
     font-weight: 500;
     color: var(--muted-foreground);
+}
+
+
+
+/*! ===== Variables Selector ===== */
+
+.variables-selector {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.variables-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.variables-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.variable-checkbox-container {
+    position: relative;
+}
+
+.variable-checkbox {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.variable-label {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: background-color 0.2s;
+}
+
+.variable-label:hover {
+    background-color: var(--bg-black-100);
+}
+
+.checkbox-custom {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background);
+    flex-shrink: 0;
+}
+
+.variable-checkbox:checked+.variable-label .checkbox-custom {
+    border-color: var(--primary);
+    background-color: var(--primary);
+}
+
+.checkbox-icon {
+    color: var(--primary-foreground);
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.variable-name {
+    font-size: 0.75rem;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 0.5rem;
+}
+
+.variable-info-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--muted-foreground);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.variable-label:hover .variable-info-icon {
+    opacity: 1;
+}
+
+.variables-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+.variables-summary {
+    text-align: right;
+    padding: 0.25rem;
+}
+
+
+/* --- weather dashboard --- */
+
+.weather-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--background);
+    box-shadow: var(--shadow-sm);
+}
+
+.weather-dashboard-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.weather-controls-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Make variables selector take full width in its own row */
+.weather-variables-row {
+    grid-column: 1 / -1;
+    width: 100%;
+    display: flex;
+}
+
+.variables-selector-container {
+    width: 100%;
+}
+
+/* Override variables list to use more columns for better use of full width */
+.weather-dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.weather-dashboard-loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid rgba(var(--primary-rgb), 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary);
+    animation: spin 1s linear infinite;
+}
+
+.weather-dashboard-error {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background-color: rgba(var(--destructive-rgb), 0.1);
+    color: var(--destructive);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.error-icon {
+    font-size: 2rem;
+}
+
+.retry-button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+    background-color: rgba(var(--primary-rgb), 0.8);
+}
+
+.weather-dashboard-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    border: 1px dashed var(--border);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.empty-icon {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .weather-controls-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* --- weather-forecast.css --- */
+/**
+ * Weather Forecast Panel Styles
+ * Styles for the weather forecast component
+ */
+
+/* Main container */
+.weather-expanded {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Weather panel header */
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Location information */
+.weather-location-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.location-name {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.location-view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--muted-foreground);
+    border: none;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.location-view-btn:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+/* Empty state */
+.weather-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+/* Loading state */
+.weather-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Error state */
+.weather-error {
+    padding: 1rem;
+    text-align: center;
+    border: 1px dashed var(--destructive);
+    border-radius: 0.5rem;
+    color: var(--destructive);
+}
+
+/* Weather content */
+.weather-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex-grow: 1;
+}
+
+/* Today's forecast */
+.weather-today {
+    background: var(--accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.weather-today-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.today-label {
+    font-weight: 600;
+    color: var(--accent-foreground);
+}
+
+.today-date {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.today-temp {
+    display: flex;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.today-high {
+    color: #FB923C;
+}
+
+.today-low {
+    color: #60A5FA;
+}
+
+.weather-today-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.weather-today-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.weather-today-info {
+    flex: 1;
+}
+
+.weather-today-desc {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--accent-foreground);
+}
+
+.weather-today-precip {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+/* Upcoming forecast */
+.upcoming-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.weather-forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.weather-forecast-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Day card */
+.weather-day-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.weather-day-card:hover {
+    transform: translateY(-2px);
+}
+
+.weather-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.day-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.full-date {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.weather-details {
+    margin-top: 0.5rem;
+}
+
+.temperature {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.weather-description {
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.precipitation {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .weather-today-details {
+        gap: 1.5rem;
+    }
+
+    .weather-today-icon {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .weather-forecast-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+
+/* --- weather-summary.css --- */
+/* Unit toggle buttons */
+
+.unit-toggle-buttons {
+    display: flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.unit-button {
+    background: transparent;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.unit-button.active {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.unit-button:hover:not(.active) {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.summary-content {
+    margin-bottom: 1rem;
+}
+
+/* Weather summary cards */
+.current-weather-summary,
+.daily-weather-summary,
+.hourly-weather-summary {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Weather icon container */
+.weather-summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Content layout */
+.weather-summary-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.weather-summary-details {
+    flex: 1;
 }

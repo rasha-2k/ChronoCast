@@ -1,6 +1,6 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Moon, SunMedium, Github, PanelsTopLeft } from "lucide-react";
+import { Moon, SunMedium, Github, PanelsTopLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandIcon } from "@/components/icons/BrandIcon";
 import { useTheme } from "next-themes";
@@ -8,14 +8,32 @@ import { useTheme } from "next-themes";
 export function AppLayout({ children }: PropsWithChildren<{}>) {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const NavLink = ({ to, label }: { to: string; label: string }) => (
+  // Close menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close menu on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMobileMenuOpen]);
+
+  const NavLink = ({ to, label, onClick }: { to: string; label: string; onClick?: () => void }) => (
     <Link
       to={to}
       className={cn(
         "nav-link",
         location.pathname === to && "nav-link-active"
       )}
+      onClick={onClick}
     >
       {label}
     </Link>
@@ -61,11 +79,21 @@ export function AppLayout({ children }: PropsWithChildren<{}>) {
                 <Moon className="theme-icon h-4 w-4" />
               )}
             </button>
-            <div id="menu-toggle" className="menu-toggle">
-              <PanelsTopLeft className="menu-icon h-5 w-5" />
-            </div>
+            <button
+              id="menu-toggle"
+              className="menu-toggle"
+              aria-label="Toggle mobile menu"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <X className="menu-icon h-5 w-5" />
+              ) : (
+                <PanelsTopLeft className="menu-icon h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
+
       </header>
 
       <main id="main-content" className="main-content">
@@ -78,10 +106,68 @@ export function AppLayout({ children }: PropsWithChildren<{}>) {
             © {new Date().getFullYear()} ChronoCast • NASA Space Apps
           </p>
           <p id="footer-builtwith" className="footer-builtwith">
-            Built with React, Tailwind, Recharts
+            Developed by{' '}
+            <a 
+              href="https://rashaalsaleh.com" 
+              target="_blank" 
+              rel="noreferrer"
+              style={{ color: 'var(--primary)', textDecoration: 'none' }}
+              onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+            >
+              Rasha Alsaleh
+            </a>
           </p>
         </div>
       </footer>
+
+      {isMobileMenuOpen && (
+        <>
+          <div
+            className="mobile-menu-overlay"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="mobile-menu">
+            <div className="mobile-menu-header">
+              <Link to="/" className="mobile-brand-link" onClick={() => setIsMobileMenuOpen(false)}>
+                <BrandIcon />
+                <span className="mobile-brand-title">
+                  CHRONOCAST
+                </span>
+              </Link>
+              <button
+                className="mobile-close-btn"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Sidebar Navigation */}
+            <nav className="mobile-nav">
+              <NavLink to="/" label="Home" onClick={() => setIsMobileMenuOpen(false)} />
+              <NavLink to="/dashboard" label="Dashboard" onClick={() => setIsMobileMenuOpen(false)} />
+              <NavLink to="/about" label="About" onClick={() => setIsMobileMenuOpen(false)} />
+            </nav>
+            
+            {/* Sidebar Footer */}
+            <div className="mobile-menu-footer">
+              <a
+                className="mobile-github-link"
+                href="https://github.com/rasha-2k/ChronoCast"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Github className="github-icon h-4 w-4" />
+                Star on GitHub
+              </a>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
