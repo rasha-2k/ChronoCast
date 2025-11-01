@@ -1,23 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
-import { DateObject } from "react-multi-date-picker";
+import { useCallback, useEffect, useState } from 'react';
+import { DateObject } from 'react-multi-date-picker';
 
-export const useDateValidation = (
-    values: (DateObject | string | Date | null)[]
-) => {
+export function useDateValidation(values: (DateObject | string | Date | null)[]) {
     const [dateValidationError, setDateValidationError] = useState<string | null>(null);
 
-    const validateDateRange = useCallback((
-        dateValues: (DateObject | string | Date | null)[]
-    ): string | null => {
+    const validateDateRange = useCallback((dateValues: (DateObject | string | Date | null)[]): string | null => {
         if (!dateValues || dateValues.length === 0) {
             return 'Please select at least one date';
         }
 
         const today = new Date();
         const maxFuture = new Date();
-        maxFuture.setDate(today.getDate() + 16);
+        maxFuture.setDate(today.getDate() + 16); // 16 days in future
         const minPast = new Date();
-        minPast.setMonth(today.getMonth() - 3);
+        minPast.setMonth(today.getMonth() - 3); // 3 months in past
 
         const toYYYYMMDD = (v: DateObject | string | Date) =>
             v instanceof DateObject
@@ -57,9 +53,9 @@ export const useDateValidation = (
     }, []);
 
     useEffect(() => {
-        const error = validateDateRange(values);
-        setDateValidationError(error);
+        const validationError = validateDateRange(values);
+        setDateValidationError(validationError);
     }, [values, validateDateRange]);
 
     return { dateValidationError, validateDateRange };
-};
+}

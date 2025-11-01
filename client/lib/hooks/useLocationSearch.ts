@@ -1,45 +1,78 @@
-import { useCallback, useState, useEffect } from "react";
-import { DateObject } from "react-multi-date-picker";
+import { useState, useEffect, useCallback } from 'react';
 
-export const useDateValidation = (values: (DateObject | string | Date | null)[]) => {
-    const [dateValidationError, setDateValidationError] = useState<string | null>(null);
+interface LocationResult {
+    name: string;
+    latitude: number;
+    longitude: number;
+}
 
-    const validateDateRange = useCallback((dateValues: (DateObject | string | Date | null)[]): string | null => {
-        if (!dateValues || dateValues.length === 0) {
-            return 'Please select at least one date';
+export function useLocationSearch() {
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [searchResults, setSearchResults] = useState<LocationResult[]>([]);
+    const [isSearching, setIsSearching] = useState<boolean>(false);
+
+    const searchLocations = useCallback(async (query: string) => {
+        if (!query || query.length < 2) {
+            setSearchResults([]);
+            return;
         }
 
-        const today = new Date();
-        const maxFuture = new Date();
-        maxFuture.setDate(today.getDate() + 16);
-        const minPast = new Date();
-        minPast.setMonth(today.getMonth() - 3);
+        setIsSearching(true);
 
-        const toYYYYMMDD = (v: DateObject | string | Date) =>
-            v instanceof DateObject ? v.format("YYYY-MM-DD") : new DateObject(v).format("YYYY-MM-DD");
+        try {
+            const response = await fetch(
+                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`
+            );
 
-        const validDates = dateValues.filter(Boolean) as (DateObject | string | Date)[];
+            if (!response.ok) {
+                throw new Error('Failed to fetch location data');
+            }
 
-        if (validDates.length === 1) {
-            const date = new Date(toYYYYMMDD(validDates[0]));
-            if (date < minPast) return 'Date cannot be more than 3 months in the past';
-            if (date > maxFuture) return 'Date cannot be more than 16 days in the future';
-        } else if (validDates.length === 2) {
-            const startDate = new Date(toYYYYMMDD(validDates[0]));
-            const endDate = new Date(toYYYYMMDD(validDates[1]));
+            const data = await response.json();
 
-            if (startDate > endDate) return 'Start date must be before end date';
-            if (startDate < minPast) return 'Start date cannot be more than 3 months in the past';
-            if (endDate > maxFuture) return 'End date cannot be more than 16 days in the future';
+            if (data.results) {
+                const results = data.results.map((item: any) => ({
+                    name: `${item.name}${item.admin1 ? `, ${item.admin1}` : ''}${item.country ? `, ${item.country}` : ''}`,
+                    latitude: item.latitude,
+                    longitude: item.longitude
+                }));
+
+                setSearchResults(results);
+            } else {
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error searching for locations:', error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
         }
-
-        return null;
     }, []);
 
+    // Debounce search
     useEffect(() => {
-        const validationError = validateDateRange(values);
-        setDateValidationError(validationError);
-    }, [values, validateDateRange]);
+        const timer = setTimeout(() => {
+            if (searchTerm.length >= 2) {
+                searchLocations(searchTerm);
+            }
+        }, 300);
 
-    return { dateValidationError, validateDateRange };
-};
+        return () => clearTimeout(timer);
+    }, [searchTerm, searchLocations]);
+
+    const clearSearch = useCallback(() => {
+        setSearchTerm("");
+        setSearchResults([]);
+    }, []);
+
+    return {
+        searchTerm,
+        setSearchTerm,
+        searchResults,
+        setSearchResults,
+        isSearching,
+        setIsSearching,
+        searchLocations,
+        clearSearch
+    };
+}
