@@ -1,9 +1,6 @@
-import { AppLayout } from "@/components/layout/Layout";
-
 export default function About() {
   return (
-    <AppLayout>
-      <div className="cc-about-page">
+    <div className="cc-about-page">
         <div className="cc-about-main">
           <div className="cc-about-header">
             <h1 className="cc-about-title">About ChronoCast</h1>
@@ -38,6 +35,5 @@ export default function About() {
           </div>
         </div>
       </div>
-    </AppLayout>
   );
 }

@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
-import { AppLayout } from "@/components/layout";
 import { Telescope, Sparkles } from "lucide-react";
 
 export default function Landing() {
   return (
-    <AppLayout>
-      <section className="cc-landing-hero">
+    <section className="cc-landing-hero">
         <div className="cc-landing-bg-effects">
           <div className="cc-landing-bg-blur-1" />
           <div className="cc-landing-bg-blur-2" />
@@ -60,6 +58,5 @@ export default function Landing() {
           ))}
         </div>
       </section>
-    </AppLayout>
   );
 }
