@@ -15,23 +15,10 @@ export function AppLayout({ children }: PropsWithChildren<{}>) {
     setMounted(true);
   }, []);
 
-  // Close menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Close menu on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMobileMenuOpen]);
-
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';

@@ -10,26 +10,16 @@
 @layer base {
     :root {
         /* ===== Base Theme Colors ===== */
-        --background: #0B0D1A;
-        --foreground: #ffffff;
-        --card: #1A1B2E;
-        --card-foreground: #ffffff;
-        --popover: #1A1B2E;
-        --popover-foreground: #ffffff;
+        --white: #fff;
         --primary: #6366f1;
         --primary-rgb: 99, 102, 241;
-        --primary-foreground: #ffffff;
         --secondary: #2D2B55;
         --secondary-rgb: 45, 43, 85;
         --secondary-foreground: #ffffff;
         --muted: #2D2B55;
-        --muted-foreground: #909090;
         --accent: #2D2B55;
-        --accent-foreground: #ffffff;
         --destructive: #EF4444;
         --destructive-foreground: #ffffff;
-        --border: #2D2B55;
-        --input: #2D2B55;
         --ring: #8B5CF6;
         --radius: 0.5rem;
         /* ===== Background Layers ===== */
@@ -54,7 +44,6 @@
         --error: #EF4444;
         --info: #06B6D4;
         /* ===== Gradients ===== */
-        --gradient-main: linear-gradient(135deg, #0B0D1A, #1A1B2E, #2D2B55);
         --gradient-accent: linear-gradient(135deg, #6366F1, #8B5CF6);
         /* ===== Shadows ===== */
         --shadow-sm: 0 2px 4px rgba(139, 92, 246, 0.1);
@@ -82,58 +71,26 @@
         --card: #1A1B2E;
         --card-foreground: #ffffff;
         --popover: #1A1B2E;
-        --popover-foreground: #ffffff;
         --primary: #6366F1;
-        --primary-foreground: #ffffff;
         --secondary: #2D2B55;
         --secondary-foreground: #ffffff;
         --muted: #2D2B55;
         --muted-foreground: #909090;
         --accent: #2D2B55;
-        --accent-foreground: #ffffff;
         --destructive: #EF4444;
         --destructive-foreground: #ffffff;
         --border: #2D2B55;
         --input: #2D2B55;
         --ring: #8B5CF6;
         --radius: 0.5rem;
-        /* ===== Background Layers ===== */
-        --bg-black-900: #0B0D1A;
-        --bg-black-100: #1A1B2E;
-        --bg-black-50: #2D2B55;
-        --bg-black-25: #4A4A7A;
-        /* ===== Text Colors ===== */
-        --text-black-900: #ffffff;
-        --text-black-700: #e9e9e9;
-        --text-black-600: #909090;
-        /* ===== Glass Effects ===== */
-        --glass-bg: rgba(75, 74, 122, 0.15);
-        --glass-border: rgba(139, 92, 246, 0.2);
-        /* ===== Brand Colors ===== */
-        --brand-primary: #6366F1;
-        --brand-secondary: #8B5CF6;
-        --brand-accent: #06B6D4;
-        /* ===== Status Colors ===== */
-        --success: #10B981;
-        --warning: #F59E0B;
-        --error: #EF4444;
-        --info: #06B6D4;
         /* ===== Gradients ===== */
         --gradient-main: linear-gradient(135deg, #0B0D1A, #1A1B2E, #2D2B55);
-        --gradient-accent: linear-gradient(135deg, #6366F1, #8B5CF6);
-        /* ===== Shadows ===== */
-        --shadow-sm: 0 2px 4px rgba(139, 92, 246, 0.1);
-        --shadow-md: 0 4px 12px rgba(139, 92, 246, 0.15);
-        --shadow-lg: 0 8px 24px rgba(139, 92, 246, 0.2);
         /* ===== Sidebar Colors ===== */
         --sidebar-background: #1A1B2E;
         --sidebar-foreground: #e9e9e9;
-        --sidebar-primary: #6366F1;
-        --sidebar-primary-foreground: #ffffff;
         --sidebar-accent: #2D2B55;
         --sidebar-accent-foreground: #ffffff;
         --sidebar-border: #2D2B55;
-        --sidebar-ring: #8B5CF6;
     }
 
     /*! ===== Light Theme (Explicit) ===== */
@@ -143,16 +100,8 @@
         --card: #F1F5F9;
         --card-foreground: #1E293B;
         --popover: #F1F5F9;
-        --popover-foreground: #1E293B;
-        --primary: #6366F1;
-        --primary-foreground: #ffffff;
-        --secondary: #E2E8F0;
-        --secondary-foreground: #1E293B;
-        --muted: #E2E8F0;
         --muted-foreground: #64748B;
-        --accent: #E2E8F0;
-        --accent-foreground: #1E293B;
-        --border: #E2E8F0;
+        --border: #312F53;
         --input: #E2E8F0;
         --bg-black-900: #F8FAFC;
         --bg-black-100: #F1F5F9;

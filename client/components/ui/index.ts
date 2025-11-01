@@ -50,5 +50,10 @@ export { Sidebar } from './sidebar';
 export { default as ForecastTypeSelector } from './forecast-type-selector';
 export { default as VariablesSelector } from './variables-selector';
 export { default as WeatherSummary } from './weather-summary';
+export { KPICard } from './KPICard';
+export { SuggestedItems } from './SuggestedItems';
+export { NASAImage } from './NASAImage';
+export { LocationSelector } from './LocationSelector';
+export { WeatherDashboardComponent } from './WeatherDashboard';
 
 export * from './use-toast';

@@ -1,12 +1,14 @@
 import React from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
+import { LoadingSkeleton } from "@/components/common";
 
 interface LocationMapProps {
     center?: [number, number];
     zoom?: number;
     onMapClick?: (lat: number, lng: number) => void;
     weatherLocation?: { lat: number; lng: number };
+    loading?: boolean;
 }
 
 const MapFocus = ({ center, zoom, weatherLocation }: {
@@ -19,6 +21,7 @@ const MapFocus = ({ center, zoom, weatherLocation }: {
     const locationChangedRef = React.useRef(false);
     const previousCenterRef = React.useRef<string | null>(null);
     const previousWeatherLocationRef = React.useRef<string | null>(null);
+    const setViewTimeoutRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         if (!center && !weatherLocation) {
@@ -37,25 +40,43 @@ const MapFocus = ({ center, zoom, weatherLocation }: {
         if (isInitialRender || (isCenterChange || isWeatherLocationChange)) {
             locationChangedRef.current = true;
 
-            setTimeout(() => {
-                if (!map.getContainer()) return;
+            if (setViewTimeoutRef.current) {
+                clearTimeout(setViewTimeoutRef.current);
+            }
 
-                if (center && zoom) {
-                    map.setView(center, zoom, { animate: false });
-                } else if (weatherLocation) {
-                    map.setView([weatherLocation.lat, weatherLocation.lng], 10, { animate: false });
+            setViewTimeoutRef.current = window.setTimeout(() => {
+                try {
+                    const container = map.getContainer();
+                    if (!container || !container.parentNode) return;
+
+                    if (center && zoom) {
+                        map.setView(center, zoom, { animate: false, duration: 0 });
+                    } else if (weatherLocation) {
+                        map.setView([weatherLocation.lat, weatherLocation.lng], 10, { animate: false, duration: 0 });
+                    }
+                } catch (err) {
+                    console.warn('Error in MapFocus setView:', err);
                 }
-            }, 0);
+                setViewTimeoutRef.current = null;
+            }, 100);
 
             setTimeout(() => {
                 locationChangedRef.current = false;
-            }, 100);
+            }, 200);
 
             initialRenderRef.current = false;
             previousCenterRef.current = currentCenterString;
             previousWeatherLocationRef.current = currentWeatherLocationString;
         }
     }, [map, center, zoom, weatherLocation]);
+
+    React.useEffect(() => {
+        return () => {
+            if (setViewTimeoutRef.current) {
+                clearTimeout(setViewTimeoutRef.current);
+            }
+        };
+    }, []);
 
     return null;
 };
@@ -65,6 +86,7 @@ const MapClickHandler = ({ onMapClick }: {
 }) => {
     const map = useMap();
     const currentViewRef = React.useRef<{ center: L.LatLng, zoom: number } | null>(null);
+    const setViewTimeoutRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         const updateCurrentView = () => {
@@ -82,6 +104,9 @@ const MapClickHandler = ({ onMapClick }: {
         return () => {
             map.off('moveend', updateCurrentView);
             map.off('zoomend', updateCurrentView);
+            if (setViewTimeoutRef.current) {
+                clearTimeout(setViewTimeoutRef.current);
+            }
         };
     }, [map]);
 
@@ -102,12 +127,25 @@ const MapClickHandler = ({ onMapClick }: {
             map.setView = originalSetView;
             map.fitBounds = originalFitBounds;
 
+            if (setViewTimeoutRef.current) {
+                clearTimeout(setViewTimeoutRef.current);
+            }
+
             if (previousView) {
-                setTimeout(() => {
-                    if (map.getContainer()) {
-                        map.setView(previousView.center, previousView.zoom, { animate: false });
+                setViewTimeoutRef.current = window.setTimeout(() => {
+                    try {
+                        const container = map.getContainer();
+                        if (container && container.parentNode) {
+                            map.setView(previousView.center, previousView.zoom, {
+                                animate: false,
+                                duration: 0
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('Error restoring map view:', err);
                     }
-                }, 100);
+                    setViewTimeoutRef.current = null;
+                }, 150);
             }
         },
     });
@@ -132,6 +170,7 @@ const WeatherLocationMarker = ({ weatherLocation }: { weatherLocation?: { lat: n
     const map = useMap();
     const markerRef = React.useRef<L.Marker | null>(null);
     const previousLocationRef = React.useRef<string | null>(null);
+    const setViewTimeoutRef = React.useRef<number | null>(null);
 
     React.useEffect(() => {
         const currentLocationString = weatherLocation
@@ -140,6 +179,11 @@ const WeatherLocationMarker = ({ weatherLocation }: { weatherLocation?: { lat: n
 
         if (currentLocationString === previousLocationRef.current) {
             return;
+        }
+
+        if (setViewTimeoutRef.current) {
+            clearTimeout(setViewTimeoutRef.current);
+            setViewTimeoutRef.current = null;
         }
 
         if (markerRef.current) {
@@ -160,11 +204,20 @@ const WeatherLocationMarker = ({ weatherLocation }: { weatherLocation?: { lat: n
             `);
 
 
-            setTimeout(() => {
-                if (map.getContainer()) {
-                    map.setView([weatherLocation.lat, weatherLocation.lng], 10, { animate: false });
+            setViewTimeoutRef.current = window.setTimeout(() => {
+                try {
+                    const container = map.getContainer();
+                    if (container && container.parentNode) {
+                        map.setView([weatherLocation.lat, weatherLocation.lng], 10, {
+                            animate: false,
+                            duration: 0
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Error setting map view to weather location:', err);
                 }
-            }, 0);
+                setViewTimeoutRef.current = null;
+            }, 150);
         }
 
         previousLocationRef.current = currentLocationString;
@@ -172,6 +225,9 @@ const WeatherLocationMarker = ({ weatherLocation }: { weatherLocation?: { lat: n
 
     React.useEffect(() => {
         return () => {
+            if (setViewTimeoutRef.current) {
+                clearTimeout(setViewTimeoutRef.current);
+            }
             if (markerRef.current) {
                 map.removeLayer(markerRef.current);
                 markerRef.current = null;
@@ -182,7 +238,7 @@ const WeatherLocationMarker = ({ weatherLocation }: { weatherLocation?: { lat: n
     return null;
 };
 
-const LocationMap = ({ center, zoom, onMapClick, weatherLocation }: LocationMapProps) => {
+const LocationMap = ({ center, zoom, onMapClick, weatherLocation, loading }: LocationMapProps) => {
     const defaultCenter: [number, number] = [20, 0];
     const defaultZoom = 2;
 
@@ -193,49 +249,56 @@ const LocationMap = ({ center, zoom, onMapClick, weatherLocation }: LocationMapP
     }, []);
 
     return (
-        <MapContainer
-            center={center ?? defaultCenter}
-            zoom={zoom ?? defaultZoom}
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-            zoomControl={true}
-            doubleClickZoom={true}
-            dragging={true}
-        >
-            <TileLayer
-                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            />
+        <div className="relative h-full w-full rounded-lg overflow-hidden" style={{ height: "100%", width: "100%" }}>
+            <MapContainer
+                center={center ?? defaultCenter}
+                zoom={zoom ?? defaultZoom}
+                scrollWheelZoom={true}
+                style={{ height: "100%", width: "100%" }}
+                zoomControl={true}
+                doubleClickZoom={true}
+                dragging={true}
+            >
+                <TileLayer
+                    url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
 
-            {/* Component to detect user interactions with map */}
-            {React.createElement(() => {
-                const map = useMap();
+                {/* Component to detect user interactions with map */}
+                {React.createElement(() => {
+                    const map = useMap();
 
-                React.useEffect(() => {
-                    const handleInteraction = () => {
-                        hasUserInteracted.current = true;
-                    };
+                    React.useEffect(() => {
+                        const handleInteraction = () => {
+                            hasUserInteracted.current = true;
+                        };
 
-                    map.on('dragstart', handleInteraction);
-                    map.on('zoomstart', handleInteraction);
+                        map.on('dragstart', handleInteraction);
+                        map.on('zoomstart', handleInteraction);
 
-                    return () => {
-                        map.off('dragstart', handleInteraction);
-                        map.off('zoomstart', handleInteraction);
-                    };
-                }, [map]);
+                        return () => {
+                            map.off('dragstart', handleInteraction);
+                            map.off('zoomstart', handleInteraction);
+                        };
+                    }, [map]);
 
-                return null;
-            })}
+                    return null;
+                })}
 
-            <MapFocus
-                center={hasUserInteracted.current ? undefined : center}
-                zoom={hasUserInteracted.current ? undefined : zoom}
-                weatherLocation={undefined}
-            />
-            <MapClickHandler onMapClick={onMapClick} />
-            <WeatherLocationMarker weatherLocation={weatherLocation} />
-        </MapContainer>
+                <MapFocus
+                    center={hasUserInteracted.current ? undefined : center}
+                    zoom={hasUserInteracted.current ? undefined : zoom}
+                    weatherLocation={undefined}
+                />
+                <MapClickHandler onMapClick={onMapClick} />
+                <WeatherLocationMarker weatherLocation={weatherLocation} />
+            </MapContainer>
+            {loading && (
+                <div className="absolute inset-0 z-[1000]">
+                    <LoadingSkeleton className="h-full w-full rounded-lg bg-primary/10" />
+                </div>
+            )}
+        </div>
     );
 };
 

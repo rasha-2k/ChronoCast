@@ -1,49 +1,42 @@
-import { MapPin, Search, Locate, Target } from "lucide-react";
-import { LocationMap, LoadingSkeleton } from "@/components/common";
-
-interface Coordinates {
-    lat: number;
-    lng: number;
-}
-
-interface LocationState {
-    coordinates: Coordinates | null;
-    source: 'search' | 'current' | 'map' | null;
-}
+import React from 'react';
+import { Search, MapPin, Locate, Target } from 'lucide-react';
+import { LoadingSkeleton, LocationMap } from '@/components/common';
 
 interface LocationSelectorProps {
-    location: LocationState;
     searchTerm: string;
+    setSearchTerm: (term: string) => void;
     searchResults: Array<{ name: string; latitude: number; longitude: number }>;
+    setSearchResults: (results: any[]) => void;
     isSearching: boolean;
+    setIsSearching: (searching: boolean) => void;
+    selectedCoordinates: { lat: number; lng: number } | null;
+    setSelectedCoordinates: (coords: { lat: number; lng: number } | null) => void;
+    locationSource: 'search' | 'current' | 'map' | null;
+    setLocationSource: (source: 'search' | 'current' | 'map' | null) => void;
     isMapClickEnabled: boolean;
+    setIsMapClickEnabled: (enabled: boolean) => void;
     loading: boolean;
-    onLocationUpdate: (update: Partial<LocationState>) => void;
+    searchLocations: (query: string) => void;
     onClearLocation: () => void;
-    onSearchTermChange: (term: string) => void;
-    onSearchResultsClear: () => void;
-    onMapClickToggle: () => void;
-    onMapClick: (lat: number, lng: number) => void;
-    setIsSearching: (isSearching: boolean) => void;
 }
 
-export const LocationSelector = ({
-    location,
+export const LocationSelector: React.FC<LocationSelectorProps> = ({
     searchTerm,
+    setSearchTerm,
     searchResults,
+    setSearchResults,
     isSearching,
+    setIsSearching,
+    selectedCoordinates,
+    setSelectedCoordinates,
+    locationSource,
+    setLocationSource,
     isMapClickEnabled,
+    setIsMapClickEnabled,
     loading,
-    onLocationUpdate,
-    onClearLocation,
-    onSearchTermChange,
-    onSearchResultsClear,
-    onMapClickToggle,
-    onMapClick,
-    setIsSearching
-}: LocationSelectorProps) => {
-    const currentCoordinates = location.coordinates || null;
-
+    searchLocations,
+    onClearLocation
+}) => {
     const handleCurrentLocation = () => {
         if (navigator.geolocation) {
             setIsSearching(true);
@@ -51,11 +44,10 @@ export const LocationSelector = ({
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    onLocationUpdate({
-                        coordinates: { lat: latitude, lng: longitude },
-                        source: 'current'
-                    });
-                    onSearchResultsClear();
+                    setSelectedCoordinates({ lat: latitude, lng: longitude });
+                    setLocationSource('current');
+                    setSearchResults([]);
+                    setIsMapClickEnabled(false);
                     setIsSearching(false);
                 },
                 (error) => {
@@ -74,21 +66,12 @@ export const LocationSelector = ({
         }
     };
 
-    const handleSearchSelect = (result: { name: string; latitude: number; longitude: number }) => {
-        onLocationUpdate({
-            coordinates: { lat: result.latitude, lng: result.longitude },
-            source: 'search'
-        });
-        onSearchTermChange(result.name);
-        onSearchResultsClear();
-    };
-
     return (
         <div className="cc-dashboard-map">
             <div className="mb-3 flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">Location</h3>
-                    {currentCoordinates ? (
+                    {selectedCoordinates ? (
                         <button
                             onClick={onClearLocation}
                             className="dashboard-refresh-button"
@@ -99,7 +82,7 @@ export const LocationSelector = ({
                         </button>
                     ) : (
                         <button
-                            onClick={onMapClickToggle}
+                            onClick={() => setIsMapClickEnabled(!isMapClickEnabled)}
                             className={`dashboard-refresh-button ${isMapClickEnabled ? 'bg-primary/20 border-primary' : ''}`}
                             title={isMapClickEnabled ? "Cancel map selection" : "Click to choose a location on the map"}
                         >
@@ -118,24 +101,38 @@ export const LocationSelector = ({
                             className="location-search-input"
                             value={searchTerm || ""}
                             onChange={(e) => {
-                                onSearchTermChange(e.target.value);
-                                if (e.target.value.length >= 2 && (location.source === 'current' || location.source === 'map')) {
-                                    onLocationUpdate({ coordinates: null, source: null });
+                                setSearchTerm(e.target.value);
+                                if (e.target.value.length >= 2 && (locationSource === 'current' || locationSource === 'map')) {
+                                    setSelectedCoordinates(null);
+                                    setLocationSource(null);
+                                }
+                                if (e.target.value.length > 0 && isMapClickEnabled) {
+                                    setIsMapClickEnabled(false);
                                 }
                             }}
+                            onFocus={() => searchTerm && searchTerm.length >= 2 && searchLocations(searchTerm)}
                         />
                         {isSearching && <div className="search-loader"></div>}
 
                         {searchResults.length > 0 && (
                             <ul className="autocomplete-dropdown">
-                                {searchResults.map((result, index) => (
+                                {searchResults.map((location, index) => (
                                     <li
                                         key={index}
                                         className="autocomplete-item"
-                                        onClick={() => handleSearchSelect(result)}
+                                        onClick={() => {
+                                            setSelectedCoordinates({
+                                                lat: location.latitude,
+                                                lng: location.longitude
+                                            });
+                                            setLocationSource('search');
+                                            setSearchTerm(location.name);
+                                            setSearchResults([]);
+                                            setIsMapClickEnabled(false);
+                                        }}
                                     >
                                         <MapPin className="autocomplete-item-icon" />
-                                        <span>{result.name}</span>
+                                        <span>{location.name}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -153,40 +150,40 @@ export const LocationSelector = ({
             </div>
 
             <div className="relative">
-                {loading ? (
-                    <LoadingSkeleton className="h-80 w-full" />
-                ) : (
-                    <>
-                        <div className={`h-80 w-full rounded-lg overflow-hidden ${isMapClickEnabled ? 'cursor-crosshair' : ''}`}>
-                            <LocationMap
-                                onMapClick={onMapClick}
-                                center={undefined}
-                                zoom={undefined}
-                                weatherLocation={currentCoordinates}
-                            />
-                        </div>
+                <div className={`h-80 w-full rounded-lg overflow-hidden ${isMapClickEnabled ? 'cursor-crosshair' : ''}`}>
+                    <LocationMap
+                        center={undefined}
+                        zoom={undefined}
+                        onMapClick={(lat, lng) => {
+                            if (isMapClickEnabled) {
+                                setSelectedCoordinates({ lat, lng });
+                                setLocationSource('map');
+                                setSearchTerm("");
+                                setIsMapClickEnabled(false);
+                            }
+                        }}
+                        weatherLocation={selectedCoordinates}
+                        loading={loading}
+                    />
+                </div>
 
-                        <div className="flex justify-between items-center mt-2">
-                            <div className="text-xs text-muted-foreground">
-                                {isMapClickEnabled
-                                    ? <span className="flex items-center gap-1">
-                                        <Target className="h-3 w-3" /> Click anywhere on the map to set a location
-                                    </span>
-                                    : currentCoordinates
-                                        ? 'Location selected'
-                                        : 'Click "Choose on Map" button to select a location'}
-                            </div>
-                            {currentCoordinates && (
-                                <div className="flex items-center text-xs text-primary">
-                                    <MapPin className="h-3 w-3 mr-1" />
-                                    <span>
-                                        Location at: {currentCoordinates.lat.toFixed(4)}°, {currentCoordinates.lng.toFixed(4)}°
-                                    </span>
-                                </div>
-                            )}
+                <div className="flex justify-between items-center mt-2">
+                    <div className="text-xs text-muted-foreground">
+                        {isMapClickEnabled
+                            ? <span className="flex items-center gap-1"><Target className="h-3 w-3" /> Click anywhere on the map to set a location</span>
+                            : selectedCoordinates
+                                ? 'Location selected'
+                                : 'Click "Choose on Map" button to select a location'}
+                    </div>
+                    {selectedCoordinates && (
+                        <div className="flex items-center text-xs text-primary">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            <span>
+                                Location at: {`${selectedCoordinates.lat.toFixed(4)}°, ${selectedCoordinates.lng.toFixed(4)}°`}
+                            </span>
                         </div>
-                    </>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
